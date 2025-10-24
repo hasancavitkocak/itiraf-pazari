@@ -36,6 +36,8 @@ export default function RootLayout({
   return (
     <html lang="tr" suppressHydrationWarning>
       <head>
+        {/* AdSense Site Verification Meta Tag */}
+        <meta name="google-adsense-account" content="ca-pub-3309434924246570" />
         {process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_ID && (
           <>
             <Script
