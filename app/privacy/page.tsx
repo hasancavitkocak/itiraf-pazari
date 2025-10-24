@@ -37,14 +37,32 @@ export default function PrivacyPage() {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold mb-3">3. Çerezler</h2>
-              <p>Sitemizde çerezler kullanılmaktadır. Bu çerezler:</p>
+              <h2 className="text-xl font-semibold mb-3">3. Çerezler ve Reklam Teknolojileri</h2>
+              <p>Sitemizde çerezler ve benzer teknolojiler kullanılmaktadır:</p>
               <ul className="list-disc ml-6 mt-2 space-y-1">
-                <li>Oturum yönetimi için gereklidir</li>
-                <li>Site tercihlerinizi hatırlar</li>
-                <li>Google Analytics ile site kullanımını analiz eder</li>
-                <li>Reklam gösterimi için kullanılabilir</li>
+                <li>Oturum yönetimi için gerekli çerezler</li>
+                <li>Site tercihlerinizi hatırlayan çerezler</li>
+                <li>Google Analytics ile site kullanımını analiz eden çerezler</li>
+                <li>Google AdSense reklamları için kişiselleştirme çerezleri</li>
+                <li>Üçüncü taraf reklam ağları tarafından kullanılan çerezler</li>
               </ul>
+              <p className="mt-3">
+                Çerez ayarlarınızı tarayıcınızdan yönetebilir veya sitemizde görünen çerez banner&apos;ından tercihlerinizi belirtebilirsiniz.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-semibold mb-3">4. Google AdSense ve Reklam Politikası</h2>
+              <p>Sitemizde Google AdSense reklamları gösterilmektedir:</p>
+              <ul className="list-disc ml-6 mt-2 space-y-1">
+                <li>Google, reklamları kişiselleştirmek için çerezler kullanır</li>
+                <li>Reklam tercihleri Google Reklam Ayarları&apos;ndan yönetilebilir</li>
+                <li>Kişiselleştirilmiş reklamları devre dışı bırakabilirsiniz</li>
+                <li>Üçüncü taraf reklam sağlayıcıları da çerez kullanabilir</li>
+              </ul>
+              <p className="mt-3">
+                Daha fazla bilgi için <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Google Gizlilik Politikası</a>&apos;nı inceleyebilirsiniz.
+              </p>
             </section>
 
             <section>
