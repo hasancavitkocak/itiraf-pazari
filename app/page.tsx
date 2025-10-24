@@ -82,7 +82,11 @@ export default function Home() {
   const fetchCategories = async () => {
     setCategoriesLoading(true);
     try {
-      const response = await fetch('/api/categories');
+      // Cache busting için timestamp ekle
+      const timestamp = new Date().getTime();
+      const response = await fetch(`/api/categories?t=${timestamp}`, {
+        cache: 'no-store'
+      });
       const data = await response.json();
       console.log('Categories response:', data); // Debug log
       setCategories(data.categories || []);
@@ -402,7 +406,21 @@ export default function Home() {
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
             </div>
           ) : (
-            <Tabs value={selectedCategory} onValueChange={(value) => {
+            <div className="space-y-4">
+              {/* Debug: Kategori yenileme butonu */}
+              {process.env.NODE_ENV === 'development' && (
+                <div className="flex justify-end">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={fetchCategories}
+                    disabled={categoriesLoading}
+                  >
+                    🔄 Kategorileri Yenile
+                  </Button>
+                </div>
+              )}
+              <Tabs value={selectedCategory} onValueChange={(value) => {
               // Gizli kategori kontrolü
               const category = categories.find(c => c.slug === value);
               if (category?.is_premium && !user) {
@@ -424,7 +442,8 @@ export default function Home() {
                   </TabsTrigger>
                 ))}
               </TabsList>
-            </Tabs>
+              </Tabs>
+            </div>
           )}
 
           {selectedCategory !== 'all' && categories.find(c => c.slug === selectedCategory)?.is_premium && !user ? (
