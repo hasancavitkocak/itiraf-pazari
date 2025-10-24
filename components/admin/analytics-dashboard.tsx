@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Users, FileText, DollarSign, TrendingUp } from 'lucide-react';
 
@@ -14,17 +14,22 @@ export function AnalyticsDashboard() {
 
   useEffect(() => {
     fetchStats();
-  }, []);
+  }, [fetchStats]);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/analytics');
       const data = await response.json();
-      setStats(data.stats || stats);
+      setStats(data.stats || {
+        totalPosts: 0,
+        totalUsers: 0,
+        totalViews: 0,
+        totalComments: 0
+      });
     } catch (error) {
       console.error('Error fetching stats:', error);
     }
-  };
+  }, []);
 
   const StatCard = ({ title, value, icon: Icon, color }: any) => (
     <Card className="p-6">

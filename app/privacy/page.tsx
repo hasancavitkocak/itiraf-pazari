@@ -19,7 +19,7 @@ export default function PrivacyPage() {
               <p>İtiraf Pazarı olarak, kullanıcılarımızın gizliliğini korumayı taahhüt ediyoruz. Platformumuzda:</p>
               <ul className="list-disc ml-6 mt-2 space-y-1">
                 <li>İtiraflar anonim olarak paylaşılır</li>
-                <li>IP adresleri güvenlik amaçlı hash'lenerek saklanır</li>
+                <li>IP adresleri güvenlik amaçlı hash&apos;lenerek saklanır</li>
                 <li>Email adresleri sadece hesap yönetimi için kullanılır</li>
                 <li>Çerezler site deneyimini iyileştirmek için kullanılır</li>
               </ul>
