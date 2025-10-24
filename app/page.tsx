@@ -84,6 +84,7 @@ export default function Home() {
     try {
       const response = await fetch('/api/categories');
       const data = await response.json();
+      console.log('Categories response:', data); // Debug log
       setCategories(data.categories || []);
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -416,7 +417,7 @@ export default function Home() {
                 {categories.map((cat) => (
                   <TabsTrigger key={cat.id} value={cat.slug}>
                     <div className="flex items-center gap-1.5">
-                      <span>{cat.icon}</span>
+                      <span>{cat.icon && cat.icon.length <= 2 ? cat.icon : '📁'}</span>
                       {cat.name}
                       {cat.is_premium && <Lock className="h-3 w-3 text-secondary" />}
                     </div>
