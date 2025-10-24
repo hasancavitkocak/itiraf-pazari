@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
 
     // Get usernames for posts with author_id
     const postsWithUsernames = await Promise.all(
-      posts.map(async (post) => {
+      (posts || []).map(async (post) => {
         if (post.author_id) {
           const { data: profile } = await supabase
             .from('profiles')
