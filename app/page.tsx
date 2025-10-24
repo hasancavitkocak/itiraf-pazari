@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Header } from '@/components/header';
 import { NewPostForm } from '@/components/new-post-form';
 import { PostCard } from '@/components/post-card';
@@ -61,7 +61,7 @@ interface Comment {
 }
 
 export default function Home() {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
@@ -79,19 +79,6 @@ export default function Home() {
   const [newComment, setNewComment] = useState('');
   const [reportReason, setReportReason] = useState('');
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
-    setCurrentPage(1); // Reset to first page when category changes
-    fetchPosts();
-  }, [selectedCategory]);
-
-  useEffect(() => {
-    fetchPosts();
-  }, [currentPage]);
-
   const fetchCategories = async () => {
     setCategoriesLoading(true);
     try {
@@ -106,7 +93,7 @@ export default function Home() {
     }
   };
 
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
@@ -135,7 +122,19 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, selectedCategory, postsPerPage]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    setCurrentPage(1); // Reset to first page when category changes
+  }, [selectedCategory]);
+
+  useEffect(() => {
+    fetchPosts();
+  }, [selectedCategory, currentPage, fetchPosts]);
 
   const handleReaction = async (postId: string, type: 'like' | 'dislike') => {
     try {

@@ -12,10 +12,6 @@ export function AnalyticsDashboard() {
     activeUsers: 0,
   });
 
-  useEffect(() => {
-    fetchStats();
-  }, [fetchStats]);
-
   const fetchStats = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/analytics');
@@ -30,6 +26,10 @@ export function AnalyticsDashboard() {
       console.error('Error fetching stats:', error);
     }
   }, []);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
 
   const StatCard = ({ title, value, icon: Icon, color }: any) => (
     <Card className="p-6">
