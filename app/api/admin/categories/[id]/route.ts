@@ -30,16 +30,22 @@ export async function PUT(
       );
     }
 
+    const updateData: any = {
+      name,
+      slug,
+      icon,
+      is_premium,
+      order_index
+    };
+
+    // Description alanı varsa ekle
+    if (description !== undefined) {
+      updateData.description = description;
+    }
+
     const { data, error } = await supabaseAdmin
       .from('categories')
-      .update({
-        name,
-        slug,
-        icon,
-        description,
-        is_premium,
-        order_index
-      })
+      .update(updateData)
       .eq('id', id)
       .select('*')
       .single();

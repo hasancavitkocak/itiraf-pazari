@@ -42,16 +42,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const insertData: any = {
+      name,
+      slug,
+      icon,
+      is_premium: is_premium || false,
+      order_index: order_index || 1
+    };
+
+    // Description alanı varsa ekle
+    if (description) {
+      insertData.description = description;
+    }
+
     const { data, error } = await supabaseAdmin
       .from('categories')
-      .insert({
-        name,
-        slug,
-        icon,
-        description,
-        is_premium: is_premium || false,
-        order_index: order_index || 1
-      })
+      .insert(insertData)
       .select('*')
       .single();
 
