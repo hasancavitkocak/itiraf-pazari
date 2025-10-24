@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { AdBanner } from '@/components/ad-banner';
 
 export function Header() {
   const { user, profile, signOut } = useAuth();
@@ -77,6 +78,13 @@ export function Header() {
               <Button size="sm">Giriş Yap</Button>
             </Link>
           )}
+        </div>
+      </div>
+      
+      {/* Header Banner */}
+      <div className="border-b bg-background/95">
+        <div className="container mx-auto px-4 py-2">
+          <AdBanner position="header" />
         </div>
       </div>
     </motion.header>
