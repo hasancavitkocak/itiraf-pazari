@@ -14,6 +14,7 @@ import { SEOManagement } from '@/components/admin/seo-management';
 import { AdsManagement } from '@/components/admin/ads-management';
 import { PricingManagement } from '@/components/admin/pricing-management';
 import { ContactManagement } from '@/components/admin/contact-management';
+import { CategoriesManagement } from '@/components/admin/categories-management';
 import { Footer } from '@/components/footer';
 
 export default function AdminPage() {
@@ -53,10 +54,11 @@ export default function AdminPage() {
         <h1 className="text-3xl font-bold mb-8">Yönetim Paneli</h1>
 
         <Tabs defaultValue="analytics" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-8">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-9">
             <TabsTrigger value="analytics">Analiz</TabsTrigger>
             <TabsTrigger value="users">Kullanıcılar</TabsTrigger>
             <TabsTrigger value="posts">Gönderiler</TabsTrigger>
+            <TabsTrigger value="categories">Kategoriler</TabsTrigger>
             <TabsTrigger value="contact">İletişim</TabsTrigger>
             <TabsTrigger value="payments">Ödemeler</TabsTrigger>
             <TabsTrigger value="pricing">Fiyatlar</TabsTrigger>
@@ -74,6 +76,10 @@ export default function AdminPage() {
 
           <TabsContent value="posts">
             <PostsManagement />
+          </TabsContent>
+
+          <TabsContent value="categories">
+            <CategoriesManagement />
           </TabsContent>
 
           <TabsContent value="contact">

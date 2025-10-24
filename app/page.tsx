@@ -416,6 +416,7 @@ export default function Home() {
                 {categories.map((cat) => (
                   <TabsTrigger key={cat.id} value={cat.slug}>
                     <div className="flex items-center gap-1.5">
+                      <span>{cat.icon}</span>
                       {cat.name}
                       {cat.is_premium && <Lock className="h-3 w-3 text-secondary" />}
                     </div>

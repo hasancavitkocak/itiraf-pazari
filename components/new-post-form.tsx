@@ -122,6 +122,7 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
                       disabled={category.is_premium && !user}
                     >
                       <div className="flex items-center gap-2">
+                        <span>{category.icon}</span>
                         <span>{category.name}</span>
                         {category.is_premium && <Lock className="h-3 w-3 text-secondary" />}
                         {category.is_premium && !user && <span className="text-xs text-muted-foreground">(Üyelik gerekli)</span>}
