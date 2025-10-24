@@ -22,11 +22,13 @@ export function middleware(request: NextRequest) {
     rateLimit.set(key, requestCount + 1);
 
     // Eski kayıtları temizle
-    for (const [k] of rateLimit) {
-      if (parseInt(k.split(':')[1]) < Math.floor(now / windowMs) - 5) {
-        rateLimit.delete(k);
+    const keysToDelete: string[] = [];
+    rateLimit.forEach((value, key) => {
+      if (parseInt(key.split(':')[1]) < Math.floor(now / windowMs) - 5) {
+        keysToDelete.push(key);
       }
-    }
+    });
+    keysToDelete.forEach(key => rateLimit.delete(key));
   }
 
   return NextResponse.next();
