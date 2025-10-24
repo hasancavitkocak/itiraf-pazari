@@ -37,12 +37,26 @@ export default function RootLayout({
     <html lang="tr" suppressHydrationWarning>
       <head>
         {process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_ID && (
-          <Script
-            async
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_ID}`}
-            crossOrigin="anonymous"
-            strategy="afterInteractive"
-          />
+          <>
+            <Script
+              async
+              src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_ID}`}
+              crossOrigin="anonymous"
+              strategy="afterInteractive"
+            />
+            <Script
+              id="adsbygoogle-init"
+              strategy="afterInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `
+                  (adsbygoogle = window.adsbygoogle || []).push({
+                    google_ad_client: "${process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_ID}",
+                    enable_page_level_ads: true
+                  });
+                `,
+              }}
+            />
+          </>
         )}
       </head>
       <body className={inter.className}>

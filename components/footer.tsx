@@ -13,7 +13,7 @@ export function Footer() {
           <div className="container mx-auto px-4 py-4">
             <GoogleAdSense 
               adSlot="0987654321" 
-              adFormat="rectangle"
+              adFormat="auto"
               className="max-h-32"
             />
           </div>

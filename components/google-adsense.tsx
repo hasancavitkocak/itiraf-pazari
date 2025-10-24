@@ -38,7 +38,7 @@ export function GoogleAdSense({
       <ins
         className="adsbygoogle"
         style={{ display: 'block' }}
-        data-ad-client="ca-pub-XXXXXXXXXXXXXXXXX" // Buraya kendi AdSense ID'nizi yazın
+        data-ad-client={process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_ID}
         data-ad-slot={adSlot}
         data-ad-format={adFormat}
         data-full-width-responsive={fullWidthResponsive.toString()}

@@ -87,7 +87,7 @@ export function Header() {
           <div className="container mx-auto px-4 py-2">
             <GoogleAdSense 
               adSlot="1234567890" 
-              adFormat="horizontal"
+              adFormat="auto"
               className="max-h-24"
             />
           </div>
