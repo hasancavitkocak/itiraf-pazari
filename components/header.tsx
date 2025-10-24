@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { AdBanner } from '@/components/ad-banner';
+import { GoogleAdSense } from '@/components/google-adsense';
 
 export function Header() {
   const { user, profile, signOut } = useAuth();
@@ -81,12 +81,18 @@ export function Header() {
         </div>
       </div>
       
-      {/* Header Banner */}
-      <div className="border-b bg-background/95">
-        <div className="container mx-auto px-4 py-2">
-          <AdBanner position="header" />
+      {/* Header AdSense Banner */}
+      {process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_ID && (
+        <div className="border-b bg-background/95">
+          <div className="container mx-auto px-4 py-2">
+            <GoogleAdSense 
+              adSlot="1234567890" 
+              adFormat="horizontal"
+              className="max-h-24"
+            />
+          </div>
         </div>
-      </div>
+      )}
     </motion.header>
   );
 }
