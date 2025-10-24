@@ -402,11 +402,20 @@ export default function Home() {
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
             </div>
           ) : (
-            <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
+            <Tabs value={selectedCategory} onValueChange={(value) => {
+              // Gizli kategori kontrolü
+              const category = categories.find(c => c.slug === value);
+              if (category?.is_premium && !user) {
+                toast.error('Gizli kategoriye erişmek için üye girişi yapmanız gerekmektedir');
+                router.push('/auth');
+                return;
+              }
+              setSelectedCategory(value);
+            }}>
               <TabsList className="w-full justify-start overflow-x-auto">
                 <TabsTrigger value="all">Tümü</TabsTrigger>
                 {categories.map((cat) => (
-                  <TabsTrigger key={cat.id} value={cat.slug} disabled={cat.is_premium && !profile?.is_premium}>
+                  <TabsTrigger key={cat.id} value={cat.slug}>
                     <div className="flex items-center gap-1.5">
                       {cat.name}
                       {cat.is_premium && <Lock className="h-3 w-3 text-secondary" />}
@@ -417,17 +426,17 @@ export default function Home() {
             </Tabs>
           )}
 
-          {selectedCategory !== 'all' && categories.find(c => c.slug === selectedCategory)?.is_premium && !profile?.is_premium ? (
+          {selectedCategory !== 'all' && categories.find(c => c.slug === selectedCategory)?.is_premium && !user ? (
             <Card className="p-8 text-center">
               <Lock className="h-12 w-12 mx-auto mb-4 text-secondary" />
-              <h3 className="text-xl font-semibold mb-2">Bu Kategori Premium Üyeler İçindir</h3>
+              <h3 className="text-xl font-semibold mb-2">Gizli Kategori - Üyelik Gerekli</h3>
               <p className="text-muted-foreground mb-6">
-                Gizli kategorideki itirafları görmek için Premium üyeliğe sahip olmalısınız
+                Gizli kategorideki itirafları görmek için üye girişi yapmanız gerekmektedir
               </p>
-              <Link href={user ? '/premium' : '/auth'}>
-                <Button className="gap-2 premium-gradient">
+              <Link href="/auth">
+                <Button className="gap-2">
                   <Lock className="h-4 w-4" />
-                  {user ? 'Premium Ol' : 'Giriş Yap ve Premium Ol'}
+                  Giriş Yap
                 </Button>
               </Link>
             </Card>

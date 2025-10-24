@@ -44,8 +44,8 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
     }
 
     const selectedCategory = categories.find(c => c.id === categoryId);
-    if (selectedCategory?.is_premium && !profile?.is_premium) {
-      toast.error('Bu kategori premium üyeler için özeldir');
+    if (selectedCategory?.is_premium && !user) {
+      toast.error('Gizli kategoriye gönderi yapmak için üye girişi yapmanız gerekmektedir');
       return;
     }
 
@@ -119,11 +119,12 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
                     <SelectItem 
                       key={category.id} 
                       value={category.id}
-                      disabled={category.is_premium && !profile?.is_premium}
+                      disabled={category.is_premium && !user}
                     >
                       <div className="flex items-center gap-2">
                         <span>{category.name}</span>
                         {category.is_premium && <Lock className="h-3 w-3 text-secondary" />}
+                        {category.is_premium && !user && <span className="text-xs text-muted-foreground">(Üyelik gerekli)</span>}
                       </div>
                     </SelectItem>
                   ))}

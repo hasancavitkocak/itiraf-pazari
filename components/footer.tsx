@@ -28,6 +28,16 @@ export function Footer() {
                   Bize Ulaşın
                 </Link>
               </li>
+              <li>
+                <Link href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Gizlilik Politikası
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Kullanım Şartları
+                </Link>
+              </li>
             </ul>
           </div>
           

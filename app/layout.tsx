@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google';
 import { ThemeProvider } from 'next-themes';
 import { AuthProvider } from '@/lib/auth-context';
 import { Toaster } from '@/components/ui/sonner';
+import Script from 'next/script';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -33,6 +34,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="tr" suppressHydrationWarning>
+      <head>
+        {process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_ID && (
+          <Script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_ID}`}
+            crossOrigin="anonymous"
+            strategy="afterInteractive"
+          />
+        )}
+      </head>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <AuthProvider>

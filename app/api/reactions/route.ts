@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { headers } from 'next/headers';
-import { supabase } from '@/lib/supabase';
-import { getIpHash } from '@/lib/security';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,14 +17,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const hdrs = headers();
-    const ip = hdrs.get('x-forwarded-for') || hdrs.get('x-real-ip') || '127.0.0.1';
-    const ua = hdrs.get('user-agent') || 'unknown';
-    const ipHash = getIpHash(ip, ua);
+    // Get IP and User Agent from request
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    const realIp = request.headers.get('x-real-ip');
+    const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : (realIp || '127.0.0.1');
+    const userAgent = request.headers.get('user-agent') || 'unknown';
+    const ipHash = `${ip}-${userAgent}`;
 
     const today = new Date().toISOString().split('T')[0];
 
-    const { data: existingReactions } = await supabase
+    const { data: existingReactions } = await supabaseAdmin
       .from('reactions')
       .select('id')
       .eq('ip_hash', ipHash)
@@ -36,7 +40,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: existingReaction } = await supabase
+    const { data: existingReaction } = await supabaseAdmin
       .from('reactions')
       .select('*')
       .eq('post_id', post_id)
@@ -45,7 +49,7 @@ export async function POST(request: NextRequest) {
 
     if (existingReaction) {
       if (existingReaction.type === type) {
-        const { error: deleteError } = await supabase
+        const { error: deleteError } = await supabaseAdmin
           .from('reactions')
           .delete()
           .eq('id', existingReaction.id);
@@ -56,7 +60,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({ message: 'Reaksiyon kaldırıldı', action: 'removed' });
       } else {
-        const { error: updateError } = await supabase
+        const { error: updateError } = await supabaseAdmin
           .from('reactions')
           .update({ type })
           .eq('id', existingReaction.id);
@@ -69,7 +73,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from('reactions')
       .insert({
         post_id,
@@ -88,7 +92,7 @@ export async function POST(request: NextRequest) {
 }
 
 async function updatePostCounts(postId: string) {
-  const { data: reactions } = await supabase
+  const { data: reactions } = await supabaseAdmin
     .from('reactions')
     .select('type')
     .eq('post_id', postId);
@@ -98,7 +102,7 @@ async function updatePostCounts(postId: string) {
   const likes = reactions.filter((r) => r.type === 'like').length;
   const dislikes = reactions.filter((r) => r.type === 'dislike').length;
 
-  await supabase
+  await supabaseAdmin
     .from('posts')
     .update({
       likes_count: likes,
@@ -116,12 +120,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ reactions: {} });
     }
 
-    const hdrs = headers();
-    const ip = hdrs.get('x-forwarded-for') || hdrs.get('x-real-ip') || '127.0.0.1';
-    const ua = hdrs.get('user-agent') || 'unknown';
-    const ipHash = getIpHash(ip, ua);
+    // Get IP and User Agent from request
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    const realIp = request.headers.get('x-real-ip');
+    const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : (realIp || '127.0.0.1');
+    const userAgent = request.headers.get('user-agent') || 'unknown';
+    const ipHash = `${ip}-${userAgent}`;
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('reactions')
       .select('post_id, type')
       .eq('ip_hash', ipHash)
