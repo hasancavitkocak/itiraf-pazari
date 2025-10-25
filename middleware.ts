@@ -7,7 +7,8 @@ const rateLimit = new Map();
 export function middleware(request: NextRequest) {
   // API routes için rate limiting
   if (request.nextUrl.pathname.startsWith('/api/')) {
-    const ip = request.ip || request.headers.get('x-forwarded-for') || 'anonymous';
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : 'anonymous';
     const now = Date.now();
     const windowMs = 60 * 1000; // 1 dakika
     const maxRequests = 100; // Dakikada max 100 istek
