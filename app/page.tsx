@@ -6,7 +6,7 @@ import { NewPostForm } from '@/components/new-post-form';
 import { PostCard } from '@/components/post-card';
 import { Footer } from '@/components/footer';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Loader as Loader2, Lock, Trash2 } from 'lucide-react';
@@ -17,6 +17,7 @@ import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -28,6 +29,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ChevronDown, ChevronUp, Filter, Plus, Sparkles, Heart } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface Category {
   id: string;
@@ -94,6 +97,8 @@ export default function Home() {
   const [districts, setDistricts] = useState<District[]>([]);
   const [citiesLoading, setCitiesLoading] = useState(false);
   const [districtsLoading, setDistrictsLoading] = useState(false);
+  const [newPostDialogOpen, setNewPostDialogOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -476,11 +481,31 @@ export default function Home() {
           animate={{ opacity: 1 }}
           className="space-y-6"
         >
-          <NewPostForm
-            categories={categories}
-            categoriesLoading={categoriesLoading}
-            onPostCreated={fetchPosts}
-          />
+          {/* Attractive New Post Button */}
+          <motion.div
+            initial={{ scale: 0.95 }}
+            animate={{ scale: 1 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Button 
+              onClick={() => setNewPostDialogOpen(true)}
+              className="w-full h-auto p-6 bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 hover:from-purple-700 hover:via-pink-700 hover:to-red-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 border-0 relative overflow-hidden group"
+              size="lg"
+            >
+              <div className="flex items-center justify-center gap-4 w-full">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-6 w-6 animate-pulse" />
+                  <Heart className="h-5 w-5" />
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold">Kayıt Gerektirmez, Sadece Cesaret</div>
+                  <div className="text-sm opacity-90">İtirafınızı anonim olarak paylaşın • Kimse bilmeyecek</div>
+                </div>
+                <Plus className="h-6 w-6" />
+              </div>
+            </Button>
+          </motion.div>
 
           {categoriesLoading ? (
             <div className="flex justify-center py-4">
@@ -502,114 +527,157 @@ export default function Home() {
                 </div>
               )}
               
-              {/* Kategori Filtreleri */}
-              <Tabs value={selectedCategory} onValueChange={(value) => {
-              // Gizli kategori kontrolü
-              const category = categories.find(c => c.slug === value);
-              if (category?.is_premium && !user) {
-                toast.error('Gizli kategoriye erişmek için üye girişi yapmanız gerekmektedir');
-                router.push('/auth');
-                return;
-              }
-              setSelectedCategory(value);
-            }}>
-              <TabsList className="w-full justify-start overflow-x-auto">
-                <TabsTrigger value="all">Tümü</TabsTrigger>
-                {categories.map((cat) => (
-                  <TabsTrigger key={cat.id} value={cat.slug}>
-                    <div className="flex items-center gap-1.5">
-                      <span>{cat.icon && cat.icon.length <= 2 ? cat.icon : '📁'}</span>
-                      {cat.name}
-                      {cat.is_premium && <Lock className="h-3 w-3 text-secondary" />}
+
+
+              {/* Collapsible Filter Area */}
+              <Collapsible open={filterOpen} onOpenChange={setFilterOpen}>
+                <CollapsibleTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-between h-auto p-3"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Filter className="h-4 w-4" />
+                      <span>Filtreleme Seçenekleri</span>
+                      {(selectedCategory !== 'all' || selectedCity || selectedDistrict || searchKeyword) && (
+                        <Badge variant="secondary" className="ml-2">
+                          Aktif
+                        </Badge>
+                      )}
                     </div>
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-              </Tabs>
-
-              {/* Filtreleme Alanı */}
-              <Card className="p-4">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="search">Anahtar Kelime</Label>
-                    <Input
-                      id="search"
-                      value={searchKeyword}
-                      onChange={(e) => setSearchKeyword(e.target.value)}
-                      placeholder="Başlık veya içerikte ara..."
-                      className="w-full"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="cityFilter">İl</Label>
-                    {citiesLoading ? (
-                      <div className="flex items-center gap-2 p-2">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        <span className="text-sm text-muted-foreground">Yükleniyor...</span>
+                    {filterOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-4">
+                  <Card className="p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="category">Kategori</Label>
+                        {categoriesLoading ? (
+                          <div className="flex items-center gap-2 p-2">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span className="text-sm text-muted-foreground">Yükleniyor...</span>
+                          </div>
+                        ) : (
+                          <Select 
+                            value={selectedCategory} 
+                            onValueChange={(value) => {
+                              // Gizli kategori kontrolü
+                              const category = categories.find(c => c.slug === value);
+                              if (category?.is_premium && !user) {
+                                toast.error('Gizli kategoriye erişmek için üye girişi yapmanız gerekmektedir');
+                                router.push('/auth');
+                                return;
+                              }
+                              setSelectedCategory(value);
+                            }}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Kategori seçin" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Tüm Kategoriler</SelectItem>
+                              {categories.map((cat) => (
+                                <SelectItem 
+                                  key={cat.id} 
+                                  value={cat.slug}
+                                  disabled={cat.is_premium && !user}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <span>{cat.icon && cat.icon.length <= 2 ? cat.icon : '📁'}</span>
+                                    <span>{cat.name}</span>
+                                    {cat.is_premium && <Lock className="h-3 w-3 text-secondary" />}
+                                    {cat.is_premium && !user && <span className="text-xs text-muted-foreground">(Üyelik gerekli)</span>}
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
                       </div>
-                    ) : (
-                      <Select value={selectedCity} onValueChange={setSelectedCity}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="İl seçin" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Tüm İller</SelectItem>
-                          {cities.map((city) => (
-                            <SelectItem key={city.id} value={city.id.toString()}>
-                              {city.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="districtFilter">İlçe</Label>
-                    {districtsLoading ? (
-                      <div className="flex items-center gap-2 p-2">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        <span className="text-sm text-muted-foreground">Yükleniyor...</span>
+                      <div className="space-y-2">
+                        <Label htmlFor="search">Anahtar Kelime</Label>
+                        <Input
+                          id="search"
+                          value={searchKeyword}
+                          onChange={(e) => setSearchKeyword(e.target.value)}
+                          placeholder="Başlık veya içerikte ara..."
+                          className="w-full"
+                        />
                       </div>
-                    ) : (
-                      <Select 
-                        value={selectedDistrict} 
-                        onValueChange={setSelectedDistrict}
-                        disabled={!selectedCity || districts.length === 0}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="İlçe seçin" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Tüm İlçeler</SelectItem>
-                          {districts.map((district) => (
-                            <SelectItem key={district.id} value={district.id.toString()}>
-                              {district.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label>&nbsp;</Label>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => {
-                        setSelectedCategory('all');
-                        setSelectedCity(undefined);
-                        setSelectedDistrict(undefined);
-                        setSearchKeyword('');
-                      }}
-                      className="w-full"
-                    >
-                      Filtreleri Temizle
-                    </Button>
-                  </div>
-                </div>
-              </Card>
+                      <div className="space-y-2">
+                        <Label htmlFor="cityFilter">İl</Label>
+                        {citiesLoading ? (
+                          <div className="flex items-center gap-2 p-2">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span className="text-sm text-muted-foreground">Yükleniyor...</span>
+                          </div>
+                        ) : (
+                          <Select value={selectedCity} onValueChange={setSelectedCity}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="İl seçin" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Tüm İller</SelectItem>
+                              {cities.map((city) => (
+                                <SelectItem key={city.id} value={city.id.toString()}>
+                                  {city.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="districtFilter">İlçe</Label>
+                        {districtsLoading ? (
+                          <div className="flex items-center gap-2 p-2">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span className="text-sm text-muted-foreground">Yükleniyor...</span>
+                          </div>
+                        ) : (
+                          <Select 
+                            value={selectedDistrict} 
+                            onValueChange={setSelectedDistrict}
+                            disabled={!selectedCity || districts.length === 0}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="İlçe seçin" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Tüm İlçeler</SelectItem>
+                              {districts.map((district) => (
+                                <SelectItem key={district.id} value={district.id.toString()}>
+                                  {district.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>&nbsp;</Label>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => {
+                            setSelectedCategory('all');
+                            setSelectedCity(undefined);
+                            setSelectedDistrict(undefined);
+                            setSearchKeyword('');
+                          }}
+                          className="w-full"
+                        >
+                          Filtreleri Temizle
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                </CollapsibleContent>
+              </Collapsible>
             </div>
           )}
 
@@ -765,6 +833,32 @@ export default function Home() {
             <Button onClick={handleSubmitReport} className="w-full">
               Bildir
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* New Post Dialog */}
+      <Dialog open={newPostDialogOpen} onOpenChange={setNewPostDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <Sparkles className="h-6 w-6 text-purple-600" />
+              Kayıt Gerektirmez, Sadece Cesaret - Yeni İtiraf Paylaş
+            </DialogTitle>
+            <DialogDescription>
+              İtirafınızı tamamen anonim olarak paylaşın. Kimlik bilgileriniz saklanmaz ve kimse sizin kim olduğunuzu bilemez.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4">
+            <NewPostForm
+              categories={categories}
+              categoriesLoading={categoriesLoading}
+              onPostCreated={() => {
+                fetchPosts();
+                setNewPostDialogOpen(false); // Form gönderildikten sonra dialog'u kapat
+                toast.success('İtirafınız başarıyla paylaşıldı! 🎉');
+              }}
+            />
           </div>
         </DialogContent>
       </Dialog>

@@ -155,10 +155,7 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Kayıt Gerektirmez, Sadece Cesaret - Yeni İtiraf Paylaş</CardTitle>
-      </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="title">Başlık</Label>
