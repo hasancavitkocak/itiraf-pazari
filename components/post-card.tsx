@@ -12,6 +12,7 @@ import { useState } from 'react';
 interface PostCardProps {
   post: {
     id: string;
+    title?: string;
     content: string;
     likes_count?: number;
     dislikes_count?: number;
@@ -20,10 +21,17 @@ interface PostCardProps {
     created_at: string;
     author_id?: string;
     username?: string;
+    custom_location?: string;
     categories?: {
       name: string;
       slug: string;
       icon: string;
+    };
+    cities?: {
+      name: string;
+    };
+    districts?: {
+      name: string;
     };
   };
   onLike: (postId: string) => void;
@@ -60,7 +68,7 @@ export function PostCard({
       <Card className={`p-6 card-hover ${post.is_boosted ? 'ring-2 ring-secondary' : ''}`}>
         <div className="space-y-4">
           <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {post.categories && (
                 <Badge variant="secondary" className="gap-1">
                   <span>{post.categories.name}</span>
@@ -96,6 +104,25 @@ export function PostCard({
               </div>
             </div>
           </div>
+
+          {post.title && (
+            <h3 className="text-lg font-semibold text-foreground">
+              {post.title}
+            </h3>
+          )}
+
+          {(post.cities || post.districts || post.custom_location) && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>📍</span>
+              <span>
+                {[
+                  post.cities?.name,
+                  post.districts?.name,
+                  post.custom_location
+                ].filter(Boolean).join(', ')}
+              </span>
+            </div>
+          )}
 
           <div className="text-foreground leading-relaxed">
             {needsTruncate && !showFullContent ? (

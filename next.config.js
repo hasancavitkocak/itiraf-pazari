@@ -1,11 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    esmExternals: 'loose',
-  },
-  webpack: (config) => {
-    config.externals = [...config.externals, 'canvas', 'jsdom'];
-    return config;
+  turbopack: {
+    resolveExtensions: ['.tsx', '.ts', '.jsx', '.js', '.mjs', '.json'],
   },
   async headers() {
     return [

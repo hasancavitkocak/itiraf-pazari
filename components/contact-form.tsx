@@ -11,8 +11,8 @@ import { Send, MessageCircle } from 'lucide-react';
 
 export function ContactForm() {
   const [formData, setFormData] = useState({
-    name: '',
     subject: '',
+    email: '',
     message: ''
   });
   const [loading, setLoading] = useState(false);
@@ -45,8 +45,8 @@ export function ContactForm() {
 
       toast.success(data.message);
       setFormData({
-        name: '',
         subject: '',
+        email: '',
         message: ''
       });
     } catch (error: any) {
@@ -72,29 +72,28 @@ export function ContactForm() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="name">Adınız *</Label>
+          <Label htmlFor="subject">Konu *</Label>
           <Input
-            id="name"
-            name="name"
+            id="subject"
+            name="subject"
             type="text"
-            value={formData.name}
+            value={formData.subject || ''}
             onChange={handleChange}
-            placeholder="Adınızı giriniz"
+            placeholder="Mesajınızın konusu"
             required
             disabled={loading}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="subject">Konu *</Label>
+          <Label htmlFor="email">E-posta (Opsiyonel)</Label>
           <Input
-            id="subject"
-            name="subject"
-            type="text"
-            value={formData.subject}
+            id="email"
+            name="email"
+            type="email"
+            value={formData.email || ''}
             onChange={handleChange}
-            placeholder="Mesajınızın konusu"
-            required
+            placeholder="E-posta adresiniz (opsiyonel)"
             disabled={loading}
           />
         </div>
@@ -104,7 +103,7 @@ export function ContactForm() {
           <Textarea
             id="message"
             name="message"
-            value={formData.message}
+            value={formData.message || ''}
             onChange={handleChange}
             placeholder="Mesajınızı buraya yazınız..."
             rows={6}

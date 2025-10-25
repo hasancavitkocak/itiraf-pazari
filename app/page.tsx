@@ -26,6 +26,8 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface Category {
   id: string;
@@ -37,6 +39,7 @@ interface Category {
 
 interface Post {
   id: string;
+  title?: string;
   content: string;
   likes_count?: number;
   dislikes_count?: number;
@@ -45,11 +48,28 @@ interface Post {
   created_at: string;
   author_id?: string;
   username?: string;
+  custom_location?: string;
   categories?: {
     name: string;
     slug: string;
     icon: string;
   };
+  cities?: {
+    name: string;
+  };
+  districts?: {
+    name: string;
+  };
+}
+
+interface City {
+  id: number;
+  name: string;
+}
+
+interface District {
+  id: number;
+  name: string;
 }
 
 interface Comment {
@@ -67,6 +87,13 @@ export default function Home() {
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [posts, setPosts] = useState<Post[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedCity, setSelectedCity] = useState<string | undefined>(undefined);
+  const [selectedDistrict, setSelectedDistrict] = useState<string | undefined>(undefined);
+  const [searchKeyword, setSearchKeyword] = useState<string>('');
+  const [cities, setCities] = useState<City[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [citiesLoading, setCitiesLoading] = useState(false);
+  const [districtsLoading, setDistrictsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -98,6 +125,37 @@ export default function Home() {
     }
   };
 
+  const fetchCities = async () => {
+    setCitiesLoading(true);
+    try {
+      const response = await fetch('/api/cities');
+      const data = await response.json();
+      setCities(data.cities || []);
+    } catch (error) {
+      console.error('Error fetching cities:', error);
+    } finally {
+      setCitiesLoading(false);
+    }
+  };
+
+  const fetchDistricts = async (cityId: string) => {
+    if (!cityId) {
+      setDistricts([]);
+      return;
+    }
+    
+    setDistrictsLoading(true);
+    try {
+      const response = await fetch(`/api/districts?city_id=${cityId}`);
+      const data = await response.json();
+      setDistricts(data.districts || []);
+    } catch (error) {
+      console.error('Error fetching districts:', error);
+    } finally {
+      setDistrictsLoading(false);
+    }
+  };
+
   const fetchPosts = useCallback(async () => {
     setLoading(true);
     try {
@@ -108,6 +166,18 @@ export default function Home() {
 
       if (selectedCategory !== 'all') {
         params.append('category', selectedCategory);
+      }
+
+      if (selectedCity && selectedCity !== 'all') {
+        params.append('city', selectedCity);
+      }
+
+      if (selectedDistrict && selectedDistrict !== 'all') {
+        params.append('district', selectedDistrict);
+      }
+
+      if (searchKeyword.trim()) {
+        params.append('search', searchKeyword.trim());
       }
 
       const response = await fetch(`/api/posts?${params}`);
@@ -127,19 +197,30 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, selectedCategory, postsPerPage]);
+  }, [currentPage, selectedCategory, selectedCity, selectedDistrict, searchKeyword, postsPerPage]);
 
   useEffect(() => {
     fetchCategories();
+    fetchCities();
   }, []);
 
   useEffect(() => {
-    setCurrentPage(1); // Reset to first page when category changes
-  }, [selectedCategory]);
+    setCurrentPage(1); // Reset to first page when filters change
+  }, [selectedCategory, selectedCity, selectedDistrict, searchKeyword]);
+
+  useEffect(() => {
+    if (selectedCity) {
+      fetchDistricts(selectedCity);
+      setSelectedDistrict(undefined); // Reset district when city changes
+    } else {
+      setDistricts([]);
+      setSelectedDistrict(undefined);
+    }
+  }, [selectedCity]);
 
   useEffect(() => {
     fetchPosts();
-  }, [selectedCategory, currentPage, fetchPosts]);
+  }, [fetchPosts]);
 
   const handleReaction = async (postId: string, type: 'like' | 'dislike') => {
     try {
@@ -420,6 +501,8 @@ export default function Home() {
                   </Button>
                 </div>
               )}
+              
+              {/* Kategori Filtreleri */}
               <Tabs value={selectedCategory} onValueChange={(value) => {
               // Gizli kategori kontrolü
               const category = categories.find(c => c.slug === value);
@@ -443,6 +526,90 @@ export default function Home() {
                 ))}
               </TabsList>
               </Tabs>
+
+              {/* Filtreleme Alanı */}
+              <Card className="p-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="search">Anahtar Kelime</Label>
+                    <Input
+                      id="search"
+                      value={searchKeyword}
+                      onChange={(e) => setSearchKeyword(e.target.value)}
+                      placeholder="Başlık veya içerikte ara..."
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="cityFilter">İl</Label>
+                    {citiesLoading ? (
+                      <div className="flex items-center gap-2 p-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span className="text-sm text-muted-foreground">Yükleniyor...</span>
+                      </div>
+                    ) : (
+                      <Select value={selectedCity} onValueChange={setSelectedCity}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="İl seçin" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Tüm İller</SelectItem>
+                          {cities.map((city) => (
+                            <SelectItem key={city.id} value={city.id.toString()}>
+                              {city.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="districtFilter">İlçe</Label>
+                    {districtsLoading ? (
+                      <div className="flex items-center gap-2 p-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span className="text-sm text-muted-foreground">Yükleniyor...</span>
+                      </div>
+                    ) : (
+                      <Select 
+                        value={selectedDistrict} 
+                        onValueChange={setSelectedDistrict}
+                        disabled={!selectedCity || districts.length === 0}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="İlçe seçin" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Tüm İlçeler</SelectItem>
+                          {districts.map((district) => (
+                            <SelectItem key={district.id} value={district.id.toString()}>
+                              {district.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>&nbsp;</Label>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        setSelectedCategory('all');
+                        setSelectedCity(undefined);
+                        setSelectedDistrict(undefined);
+                        setSearchKeyword('');
+                      }}
+                      className="w-full"
+                    >
+                      Filtreleri Temizle
+                    </Button>
+                  </div>
+                </div>
+              </Card>
             </div>
           )}
 

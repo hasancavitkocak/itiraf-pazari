@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,6 +19,16 @@ interface Category {
   is_premium: boolean;
 }
 
+interface City {
+  id: number;
+  name: string;
+}
+
+interface District {
+  id: number;
+  name: string;
+}
+
 interface NewPostFormProps {
   categories: Category[];
   categoriesLoading: boolean;
@@ -26,12 +37,67 @@ interface NewPostFormProps {
 
 export function NewPostForm({ categories, categoriesLoading, onPostCreated }: NewPostFormProps) {
   const { user, profile } = useAuth();
+  const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [categoryId, setCategoryId] = useState('');
+  const [cityId, setCityId] = useState<string | undefined>(undefined);
+  const [districtId, setDistrictId] = useState<string | undefined>(undefined);
+  const [customLocation, setCustomLocation] = useState('');
+  const [cities, setCities] = useState<City[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [citiesLoading, setCitiesLoading] = useState(false);
+  const [districtsLoading, setDistrictsLoading] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // İlleri yükle
+  useEffect(() => {
+    const fetchCities = async () => {
+      setCitiesLoading(true);
+      try {
+        const response = await fetch('/api/cities');
+        const data = await response.json();
+        setCities(data.cities || []);
+      } catch (error) {
+        console.error('Error fetching cities:', error);
+      } finally {
+        setCitiesLoading(false);
+      }
+    };
+
+    fetchCities();
+  }, []);
+
+  // İl değiştiğinde ilçeleri yükle
+  useEffect(() => {
+    if (cityId) {
+      const fetchDistricts = async () => {
+        setDistrictsLoading(true);
+        try {
+          const response = await fetch(`/api/districts?city_id=${cityId}`);
+          const data = await response.json();
+          setDistricts(data.districts || []);
+        } catch (error) {
+          console.error('Error fetching districts:', error);
+        } finally {
+          setDistrictsLoading(false);
+        }
+      };
+
+      fetchDistricts();
+      setDistrictId(undefined); // İl değiştiğinde ilçe seçimini sıfırla
+    } else {
+      setDistricts([]);
+      setDistrictId(undefined);
+    }
+  }, [cityId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!title.trim()) {
+      toast.error('Başlık boş olamaz');
+      return;
+    }
 
     if (!content.trim()) {
       toast.error('İtiraf içeriği boş olamaz');
@@ -56,8 +122,12 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
+          title: title.trim(),
           content: content.trim(), 
-          categoryId: categoryId
+          categoryId: categoryId,
+          cityId: cityId || null,
+          districtId: districtId || null,
+          customLocation: customLocation.trim() || null
         }),
       });
 
@@ -68,8 +138,12 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
       }
 
       toast.success('İtirafınız paylaşıldı!');
+      setTitle('');
       setContent('');
       setCategoryId('');
+      setCityId(undefined);
+      setDistrictId(undefined);
+      setCustomLocation('');
       onPostCreated();
     } catch (error: any) {
       console.error('Post creation error:', error);
@@ -82,10 +156,25 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Yeni İtiraf Paylaş</CardTitle>
+        <CardTitle>Kayıt Gerektirmez, Sadece Cesaret - Yeni İtiraf Paylaş</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="title">Başlık</Label>
+            <Input
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="İtirafınızın başlığını yazın..."
+              maxLength={100}
+              disabled={loading}
+            />
+            <div className="text-xs text-muted-foreground text-right">
+              {title.length}/100
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="content">İtiraf</Label>
             <Textarea
@@ -134,10 +223,77 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
             )}
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="city">İl</Label>
+              {citiesLoading ? (
+                <div className="flex items-center gap-2 p-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="text-sm text-muted-foreground">İller yükleniyor...</span>
+                </div>
+              ) : (
+                <Select value={cityId} onValueChange={setCityId} disabled={loading}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="İl seçin (opsiyonel)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {cities.map((city) => (
+                      <SelectItem key={city.id} value={city.id.toString()}>
+                        {city.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="district">İlçe</Label>
+              {districtsLoading ? (
+                <div className="flex items-center gap-2 p-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="text-sm text-muted-foreground">İlçeler yükleniyor...</span>
+                </div>
+              ) : (
+                <Select 
+                  value={districtId} 
+                  onValueChange={setDistrictId} 
+                  disabled={loading || !cityId || districts.length === 0}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="İlçe seçin (opsiyonel)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {districts.map((district) => (
+                      <SelectItem key={district.id} value={district.id.toString()}>
+                        {district.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="customLocation">Özel Konum (Opsiyonel)</Label>
+            <Input
+              id="customLocation"
+              value={customLocation}
+              onChange={(e) => setCustomLocation(e.target.value)}
+              placeholder="Örn: Merkez Mahallesi, Üniversite Kampüsü..."
+              maxLength={100}
+              disabled={loading}
+            />
+            <div className="text-xs text-muted-foreground">
+              Daha spesifik bir konum belirtmek isterseniz buraya yazabilirsiniz
+            </div>
+          </div>
+
           <Button 
             type="submit" 
             className="w-full" 
-            disabled={loading || !content.trim() || !categoryId}
+            disabled={loading || !title.trim() || !content.trim() || !categoryId}
           >
             {loading ? (
               <>

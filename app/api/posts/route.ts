@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from '@supabase/supabase-js';
+import { filterBadWords, getBadWords } from '@/lib/word-filter';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -8,14 +9,20 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
     const body = await request.json();
-    const { content, categoryId } = body;
+    const { title, content, categoryId, cityId, districtId, customLocation } = body;
 
-    if (!content || !categoryId) {
+    if (!title || !content || !categoryId) {
       return NextResponse.json(
-        { error: "Content and categoryId are required" },
+        { error: "Title, content and categoryId are required" },
         { status: 400 }
       );
     }
+
+    // Yasaklı kelimeleri al ve filtreleme yap
+    const badWords = await getBadWords();
+    const filteredTitle = filterBadWords(title, badWords);
+    const filteredContent = filterBadWords(content, badWords);
+    const filteredCustomLocation = customLocation ? filterBadWords(customLocation, badWords) : null;
 
     const forwardedFor = request.headers.get("x-forwarded-for");
     const user_ip = forwardedFor ? forwardedFor.split(',')[0].trim() : "127.0.0.1";
@@ -25,8 +32,12 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabase
       .from("posts")
       .insert({
-        content,
+        title: filteredTitle,
+        content: filteredContent,
         category_id: categoryId,
+        city_id: cityId || null,
+        district_id: districtId || null,
+        custom_location: filteredCustomLocation,
         author_ip_hash: authorHash,
       })
       .select("*")
@@ -47,6 +58,9 @@ export async function GET(request: NextRequest) {
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
+    const cityId = searchParams.get('city');
+    const districtId = searchParams.get('district');
+    const search = searchParams.get('search');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '6');
     const offset = (page - 1) * limit;
@@ -55,8 +69,12 @@ export async function GET(request: NextRequest) {
       .from("posts")
       .select(`
         id, 
+        title,
         content, 
         category_id, 
+        city_id,
+        district_id,
+        custom_location,
         created_at, 
         likes_count, 
         dislikes_count, 
@@ -64,7 +82,9 @@ export async function GET(request: NextRequest) {
         is_boosted,
         author_id,
         is_hidden,
-        categories(name, slug, icon)
+        categories(name, slug, icon),
+        cities(name),
+        districts(name)
       `)
       .eq('is_hidden', false)
       .order("created_at", { ascending: false })
@@ -75,7 +95,7 @@ export async function GET(request: NextRequest) {
       .select('id', { count: 'exact' })
       .eq('is_hidden', false);
 
-    // Kategori filtresi varsa uygula
+    // Kategori filtresi
     if (category && category !== 'all') {
       const { data: categoryData } = await supabase
         .from('categories')
@@ -89,6 +109,24 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Şehir filtresi
+    if (cityId) {
+      query = query.eq('city_id', parseInt(cityId));
+      countQuery = countQuery.eq('city_id', parseInt(cityId));
+    }
+
+    // İlçe filtresi
+    if (districtId) {
+      query = query.eq('district_id', parseInt(districtId));
+      countQuery = countQuery.eq('district_id', parseInt(districtId));
+    }
+
+    // Arama filtresi
+    if (search) {
+      query = query.or(`title.ilike.%${search}%,content.ilike.%${search}%`);
+      countQuery = countQuery.or(`title.ilike.%${search}%,content.ilike.%${search}%`);
+    }
+
     const [{ data: posts, error }, { count }] = await Promise.all([
       query,
       countQuery
@@ -98,22 +136,30 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Get usernames for posts with author_id
+    // Yasaklı kelimeleri al
+    const badWords = await getBadWords();
+
+    // Get usernames for posts with author_id and filter bad words
     const postsWithUsernames = await Promise.all(
       (posts || []).map(async (post) => {
+        let username = null;
         if (post.author_id) {
           const { data: profile } = await supabase
             .from('profiles')
             .select('username')
             .eq('id', post.author_id)
             .single();
-
-          return {
-            ...post,
-            username: profile?.username || null
-          };
+          username = profile?.username || 'Anonim';
         }
-        return post;
+
+        // Yasaklı kelimeleri filtrele
+        return {
+          ...post,
+          title: post.title ? filterBadWords(post.title, badWords) : post.title,
+          content: filterBadWords(post.content, badWords),
+          custom_location: post.custom_location ? filterBadWords(post.custom_location, badWords) : post.custom_location,
+          username
+        };
       })
     );
 

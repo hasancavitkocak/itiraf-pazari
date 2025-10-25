@@ -5,31 +5,42 @@ import { clearBadWordsCache } from '@/lib/word-filter';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-export async function GET(request: NextRequest) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const { id } = params;
 
-    const { data: badWords, error } = await supabase
+    const { error } = await supabase
       .from("bad_words")
-      .select("id, word, created_at")
-      .order("word");
+      .delete()
+      .eq('id', id);
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    // Cache'i temizle
+    clearBadWordsCache();
+
     return NextResponse.json({ 
       success: true, 
-      badWords: badWords || []
+      message: "Yasaklı kelime silindi"
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const { id } = params;
     const body = await request.json();
     const { word } = body;
 
@@ -42,7 +53,8 @@ export async function POST(request: NextRequest) {
 
     const { data, error } = await supabase
       .from("bad_words")
-      .insert({ word: word.trim().toLowerCase() })
+      .update({ word: word.trim().toLowerCase() })
+      .eq('id', id)
       .select("*")
       .single();
 
@@ -61,9 +73,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ 
       success: true, 
-      message: "Yasaklı kelime eklendi",
+      message: "Yasaklı kelime güncellendi",
       badWord: data 
-    }, { status: 201 });
+    });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

@@ -9,12 +9,19 @@ export async function POST(request: NextRequest) {
     // Service role key ile RLS bypass
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const body = await request.json();
-    const { name, subject, message } = body;
+    const { subject, email, message } = body;
 
-    // Validation
-    if (!name || !subject || !message) {
+    // Validation - konu ve mesaj zorunlu, email opsiyonel
+    if (!subject || !subject.trim()) {
       return NextResponse.json(
-        { error: 'Tüm alanlar zorunludur' },
+        { error: 'Konu alanı zorunludur' },
+        { status: 400 }
+      );
+    }
+
+    if (!message || !message.trim()) {
+      return NextResponse.json(
+        { error: 'Mesaj alanı zorunludur' },
         { status: 400 }
       );
     }
@@ -23,8 +30,8 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabase
       .from('contact_messages')
       .insert({
-        name: name.trim(),
-        email: null, // Email alanını null bırak
+        name: 'Anonim', // Ad soyad kaldırıldığı için anonim
+        email: email?.trim() || null,
         subject: subject.trim(),
         message: message.trim(),
       })

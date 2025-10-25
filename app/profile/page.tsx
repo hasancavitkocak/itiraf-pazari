@@ -22,7 +22,7 @@ export default function ProfilePage() {
   const { user, profile, refreshProfile, signOut } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [username, setUsername] = useState('');
+
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -32,51 +32,10 @@ export default function ProfilePage() {
       router.push('/auth');
       return;
     }
-    if (profile?.username) {
-      setUsername(profile.username);
-    }
+
   }, [user, profile, router]);
 
-  const handleUpdateUsername = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!username.trim()) {
-      toast.error('Kullanıcı adı boş olamaz');
-      return;
-    }
 
-    setLoading(true);
-    try {
-      // Supabase session token'ı al
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.access_token) {
-        toast.error('Oturum bulunamadı');
-        return;
-      }
-
-      const response = await fetch('/api/profile/update-username', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({ username: username.trim() }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Güncelleme başarısız');
-      }
-
-      toast.success('Kullanıcı adı güncellendi');
-      await refreshProfile();
-    } catch (error: any) {
-      toast.error(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -183,28 +142,20 @@ export default function ProfilePage() {
                   </div>
 
                   <div>
+                    <Label className="text-sm text-muted-foreground">Kullanıcı Adı</Label>
+                    <p className="font-medium">{profile.username || 'Anonim'}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Kullanıcı adınız otomatik olarak atanmıştır ve değiştirilemez
+                    </p>
+                  </div>
+
+                  <div>
                     <Label className="text-sm text-muted-foreground">Üyelik Tarihi</Label>
                     <p className="font-medium">
                       {new Date(profile.created_at).toLocaleDateString('tr-TR')}
                     </p>
                   </div>
                 </div>
-
-                <form onSubmit={handleUpdateUsername} className="space-y-3">
-                  <div>
-                    <Label htmlFor="username">Kullanıcı Adı</Label>
-                    <Input
-                      id="username"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      placeholder="Kullanıcı adınız"
-                      maxLength={50}
-                    />
-                  </div>
-                  <Button type="submit" disabled={loading} className="w-full">
-                    {loading ? 'Güncelleniyor...' : 'Kullanıcı Adını Güncelle'}
-                  </Button>
-                </form>
               </div>
             </Card>
 

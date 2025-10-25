@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
           
           return {
             ...comment,
-            username: profile?.username || 'Kullanıcı'
+            username: profile?.username || 'Anonim'
           };
         }
         return {
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ 
       comment: {
         ...data,
-        username: profile?.username || user.email?.split('@')[0] || 'Kullanıcı'
+        username: profile?.username || 'Anonim'
       }
     });
   } catch (error: any) {
