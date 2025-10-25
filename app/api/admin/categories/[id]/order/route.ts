@@ -8,11 +8,11 @@ const supabaseAdmin = createClient(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json();
-    const { id } = params;
+    const { id } = await params;
     const { order_index } = body;
 
     if (order_index < 1) {

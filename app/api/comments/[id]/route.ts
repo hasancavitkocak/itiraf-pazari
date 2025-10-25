@@ -7,10 +7,11 @@ const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const commentId = params.id;
+    const { id } = await params;
+    const commentId = id;
 
     if (!commentId) {
       return NextResponse.json(

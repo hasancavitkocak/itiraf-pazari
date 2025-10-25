@@ -8,11 +8,11 @@ const supabaseAdmin = createClient(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json();
-    const { id } = params;
+    const { id } = await params;
     const { name, slug, icon, description, is_premium, order_index } = body;
 
     // Slug benzersizlik kontrolü (kendisi hariç)
@@ -60,10 +60,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // Kategoriye ait gönderi var mı kontrol et
     const { data: posts } = await supabaseAdmin
