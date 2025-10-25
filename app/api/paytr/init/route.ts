@@ -17,11 +17,9 @@ export async function POST(request: NextRequest) {
       [payment_type === 'subscription' ? 'Premium Abonelik' : 'Gönderi Öne Çıkarma', payment_amount.toString(), 1]
     ]);
 
-    // ✅ headers() yerine request.headers
-    const user_ip =
-      request.headers.get('x-forwarded-for') ||
-      request.ip || 
-      '127.0.0.1';
+    // Get IP from headers
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    const user_ip = forwardedFor ? forwardedFor.split(',')[0].trim() : '127.0.0.1';
 
     const hashSTR = `${merchant_id}${user_ip}${merchant_oid}${user_id}${payment_amount}${user_basket}no_installment0${merchant_salt}`;
     const paytr_token = crypto.createHmac('sha256', merchant_key).update(hashSTR).digest('base64');
