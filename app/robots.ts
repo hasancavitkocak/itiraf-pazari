@@ -1,13 +1,13 @@
 import { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = 'https://itiraf-pazari.vercel.app' // Kendi domain'inizi yazın
+  const baseUrl = 'https://itirafpazari.com'
 
   return {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/admin/', '/api/'],
+      disallow: ['/admin/', '/api/', '/auth', '/premium', '/profile'],
     },
     sitemap: `${baseUrl}/sitemap.xml`,
   }
