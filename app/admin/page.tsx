@@ -52,23 +52,48 @@ export default function AdminPage() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">Yönetim Paneli</h1>
+      <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-7xl">
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-8">Yönetim Paneli</h1>
 
         <Tabs defaultValue="analytics" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-11">
-            <TabsTrigger value="analytics">Analiz</TabsTrigger>
-            <TabsTrigger value="users">Kullanıcılar</TabsTrigger>
-            <TabsTrigger value="posts">Gönderiler</TabsTrigger>
-            <TabsTrigger value="categories">Kategoriler</TabsTrigger>
-            <TabsTrigger value="badwords">Yasaklı Kelimeler</TabsTrigger>
-            <TabsTrigger value="reports">Raporlar</TabsTrigger>
-            <TabsTrigger value="contact">İletişim</TabsTrigger>
-            <TabsTrigger value="payments">Ödemeler</TabsTrigger>
-            <TabsTrigger value="pricing">Fiyatlar</TabsTrigger>
-            <TabsTrigger value="seo">SEO</TabsTrigger>
-            <TabsTrigger value="ads">Reklamlar</TabsTrigger>
-          </TabsList>
+          {/* Mobil için kaydırılabilir tab listesi */}
+          <div className="w-full overflow-x-auto">
+            <TabsList className="flex w-max min-w-full h-auto p-1 bg-muted rounded-lg">
+              <TabsTrigger value="analytics" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
+                📊 Analiz
+              </TabsTrigger>
+              <TabsTrigger value="users" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
+                👥 Kullanıcılar
+              </TabsTrigger>
+              <TabsTrigger value="posts" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
+                📝 Gönderiler
+              </TabsTrigger>
+              <TabsTrigger value="categories" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
+                📂 Kategoriler
+              </TabsTrigger>
+              <TabsTrigger value="badwords" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
+                🚫 Yasaklı Kelimeler
+              </TabsTrigger>
+              <TabsTrigger value="reports" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
+                📊 Raporlar
+              </TabsTrigger>
+              <TabsTrigger value="contact" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
+                📧 İletişim
+              </TabsTrigger>
+              <TabsTrigger value="payments" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
+                💳 Ödemeler
+              </TabsTrigger>
+              <TabsTrigger value="pricing" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
+                💰 Fiyatlar
+              </TabsTrigger>
+              <TabsTrigger value="seo" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
+                🔍 SEO
+              </TabsTrigger>
+              <TabsTrigger value="ads" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
+                📢 Reklamlar
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="analytics">
             <AnalyticsDashboard />

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -40,7 +40,7 @@ export function ReportsManagement() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const reportsPerPage = 10;
 
-  const fetchReports = async () => {
+  const fetchReports = useCallback(async () => {
     setLoading(true);
     try {
       const response = await fetch(`/api/reports?page=${currentPage}&limit=${reportsPerPage}`);
@@ -53,11 +53,11 @@ export function ReportsManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage]);
 
   useEffect(() => {
     fetchReports();
-  }, [currentPage]);
+  }, [fetchReports]);
 
 
 

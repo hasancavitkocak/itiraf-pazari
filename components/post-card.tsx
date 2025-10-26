@@ -71,6 +71,7 @@ export function PostCard({
             <div className="flex items-center gap-2 flex-wrap">
               {post.categories && (
                 <Badge variant="secondary" className="gap-1">
+                  <span>{post.categories.icon && post.categories.icon.length <= 2 ? post.categories.icon : '📁'}</span>
                   <span>{post.categories.name}</span>
                 </Badge>
               )}

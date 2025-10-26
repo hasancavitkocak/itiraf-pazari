@@ -167,9 +167,9 @@ export function CategoriesManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Kategori Yönetimi</h2>
-        <Button onClick={() => setShowForm(true)}>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h2 className="text-xl sm:text-2xl font-bold">Kategori Yönetimi</h2>
+        <Button onClick={() => setShowForm(true)} className="w-full sm:w-auto">
           <Plus className="h-4 w-4 mr-2" />
           Yeni Kategori
         </Button>
@@ -265,19 +265,19 @@ export function CategoriesManagement() {
       <div className="grid gap-4">
         {categories.map((category) => (
           <Card key={category.id}>
-            <CardContent className="p-6">
-              <div className="flex justify-between items-start">
-                <div className="flex items-center gap-4 flex-1">
+            <CardContent className="p-3 sm:p-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                <div className="flex items-center gap-2 sm:gap-4 flex-1 w-full">
                   <div className="flex items-center gap-2">
                     <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
-                    <span className="text-2xl">{category.icon}</span>
+                    <span className="text-xl sm:text-2xl">{category.icon}</span>
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold">{category.name}</h3>
-                      <Badge variant="outline">#{category.order_index}</Badge>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <h3 className="font-semibold text-sm sm:text-base truncate">{category.name}</h3>
+                      <Badge variant="outline" className="text-xs">#{category.order_index}</Badge>
                       {category.is_premium && (
-                        <Badge variant="secondary">Premium</Badge>
+                        <Badge variant="secondary" className="text-xs">Premium</Badge>
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground">
@@ -290,12 +290,13 @@ export function CategoriesManagement() {
                     )}
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-1 sm:gap-2 w-full sm:w-auto">
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => updateOrder(category.id, category.order_index - 1)}
                     disabled={category.order_index === 1}
+                    className="flex-1 sm:flex-none"
                   >
                     ↑
                   </Button>
@@ -304,6 +305,7 @@ export function CategoriesManagement() {
                     variant="outline"
                     onClick={() => updateOrder(category.id, category.order_index + 1)}
                     disabled={category.order_index === categories.length}
+                    className="flex-1 sm:flex-none"
                   >
                     ↓
                   </Button>
@@ -311,15 +313,19 @@ export function CategoriesManagement() {
                     size="sm"
                     variant="outline"
                     onClick={() => handleEdit(category)}
+                    className="flex-1 sm:flex-none"
                   >
-                    <Edit className="h-4 w-4" />
+                    <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="ml-1 sm:hidden">Düzenle</span>
                   </Button>
                   <Button
                     size="sm"
                     variant="destructive"
                     onClick={() => handleDelete(category.id)}
+                    className="flex-1 sm:flex-none"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="ml-1 sm:hidden">Sil</span>
                   </Button>
                 </div>
               </div>

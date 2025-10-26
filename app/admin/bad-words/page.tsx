@@ -280,9 +280,9 @@ export default function BadWordsPage() {
               <div className="text-xs text-muted-foreground">
                 <strong>Filtreleme Kuralları:</strong>
                 <ul className="list-disc list-inside mt-1 space-y-1">
-                  <li>2 harf ve altı: Sadece ilk harf görünür (örn: "ab" → "a*")</li>
-                  <li>3 harf: İlk ve son harf görünür (örn: "abc" → "a*c")</li>
-                  <li>4+ harf: İlk ve son harf görünür, ortası yıldız (örn: "abcd" → "a**d")</li>
+                  <li>2 harf ve altı: Sadece ilk harf görünür (örn: &quot;ab&quot; → &quot;a*&quot;)</li>
+                  <li>3 harf: İlk ve son harf görünür (örn: &quot;abc&quot; → &quot;a*c&quot;)</li>
+                  <li>4+ harf: İlk ve son harf görünür, ortası yıldız (örn: &quot;abcd&quot; → &quot;a**d&quot;)</li>
                 </ul>
               </div>
             </div>

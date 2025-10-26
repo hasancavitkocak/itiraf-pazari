@@ -102,7 +102,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const postsPerPage = 6;
+  const postsPerPage = 10;
   const [userReactions, setUserReactions] = useState<Record<string, 'like' | 'dislike' | null>>({});
   const [commentDialogOpen, setCommentDialogOpen] = useState(false);
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
@@ -490,19 +490,23 @@ export default function Home() {
           >
             <Button 
               onClick={() => setNewPostDialogOpen(true)}
-              className="w-full h-auto p-6 bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 hover:from-purple-700 hover:via-pink-700 hover:to-red-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 border-0 relative overflow-hidden group"
+              className="w-full h-auto p-3 sm:p-4 bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 hover:from-purple-700 hover:via-pink-700 hover:to-red-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 border-0 relative overflow-hidden group rounded-xl"
               size="lg"
             >
-              <div className="flex items-center justify-center gap-4 w-full">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-6 w-6 animate-pulse" />
-                  <Heart className="h-5 w-5" />
+              {/* Overlay efekti */}
+              <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-transparent to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              
+              <div className="flex items-center justify-center gap-2 sm:gap-3 w-full relative z-10">
+                <div className="bg-white/20 rounded-full p-1.5">
+                  <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
-                <div className="text-center">
-                  <div className="text-lg font-bold">Kayıt Gerektirmez, Sadece Cesaret</div>
-                  <div className="text-sm opacity-90">İtirafınızı anonim olarak paylaşın • Kimse bilmeyecek</div>
+                <div className="text-center flex-1">
+                  <div className="text-base sm:text-lg font-bold mb-0.5">✍️ YENİ İTİRAF PAYLAŞ</div>
+                  <div className="text-xs opacity-90">Kayıt gerektirmez • Tamamen anonim</div>
                 </div>
-                <Plus className="h-6 w-6" />
+                <div className="bg-white/20 rounded-full p-1.5">
+                  <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 animate-pulse" />
+                </div>
               </div>
             </Button>
           </motion.div>
@@ -839,7 +843,7 @@ export default function Home() {
 
       {/* New Post Dialog */}
       <Dialog open={newPostDialogOpen} onOpenChange={setNewPostDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto w-[95vw] sm:w-full">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl">
               <Sparkles className="h-6 w-6 text-purple-600" />

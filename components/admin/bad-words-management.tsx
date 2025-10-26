@@ -246,14 +246,14 @@ export function BadWordsManagement() {
             <div>
               <strong>Filtreleme Kuralları:</strong>
               <ul className="list-disc list-inside mt-1 space-y-1">
-                <li>2 harf ve altı: Sadece ilk harf görünür (örn: "ab" → "{censorWord('ab')}")</li>
-                <li>3 harf: İlk ve son harf görünür (örn: "abc" → "{censorWord('abc')}")</li>
-                <li>4+ harf: İlk ve son harf görünür, ortası yıldız (örn: "abcd" → "{censorWord('abcd')}")</li>
+                <li>2 harf ve altı: Sadece ilk harf görünür (örn: &quot;ab&quot; → &quot;{censorWord('ab')}&quot;)</li>
+                <li>3 harf: İlk ve son harf görünür (örn: &quot;abc&quot; → &quot;{censorWord('abc')}&quot;)</li>
+                <li>4+ harf: İlk ve son harf görünür, ortası yıldız (örn: &quot;abcd&quot; → &quot;{censorWord('abcd')}&quot;)</li>
               </ul>
             </div>
             <div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-800">
               <strong>Not:</strong> Yeni eklenen yasaklı kelimeler 30 saniye sonra otomatik olarak aktif olur. 
-              Hemen aktif etmek için "Cache Temizle" butonunu kullanın.
+              Hemen aktif etmek için &quot;Cache Temizle&quot; butonunu kullanın.
             </div>
           </div>
         </CardContent>

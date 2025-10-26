@@ -154,8 +154,16 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
   };
 
   return (
-    <Card>
-      <CardContent className="pt-6">
+    <Card className="border-2 border-primary/20 shadow-lg">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-lg font-bold text-center text-primary">
+          ✍️ Yeni İtiraf Paylaş
+        </CardTitle>
+        <p className="text-sm text-muted-foreground text-center">
+          Anonim olarak itirafınızı paylaşın
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-4">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="title">Başlık</Label>
@@ -289,16 +297,18 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
 
           <Button 
             type="submit" 
-            className="w-full" 
+            className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90" 
             disabled={loading || !title.trim() || !content.trim() || !categoryId}
           >
             {loading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 Paylaşılıyor...
               </>
             ) : (
-              'İtiraf Paylaş'
+              <>
+                ✨ İtiraf Paylaş
+              </>
             )}
           </Button>
         </form>
