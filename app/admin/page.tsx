@@ -17,6 +17,7 @@ import { ContactManagement } from '@/components/admin/contact-management';
 import { CategoriesManagement } from '@/components/admin/categories-management';
 import { BadWordsManagement } from '@/components/admin/bad-words-management';
 import { ReportsManagement } from '@/components/admin/reports-management';
+import SettingsManagement from '@/components/admin/settings-management';
 import { Footer } from '@/components/footer';
 
 export default function AdminPage() {
@@ -93,6 +94,9 @@ export default function AdminPage() {
               <TabsTrigger value="ads" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
                 📢 Reklamlar
               </TabsTrigger>
+              <TabsTrigger value="settings" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
+                ⚙️ Ayarlar
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -139,6 +143,10 @@ export default function AdminPage() {
 
           <TabsContent value="ads">
             <AdsManagement />
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <SettingsManagement />
           </TabsContent>
         </Tabs>
       </main>
