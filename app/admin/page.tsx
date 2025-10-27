@@ -80,12 +80,13 @@ export default function AdminPage() {
               <TabsTrigger value="contact" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
                 📧 İletişim
               </TabsTrigger>
-              <TabsTrigger value="payments" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
+              {/* Premium özellikler geçici olarak devre dışı */}
+              {/* <TabsTrigger value="payments" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
                 💳 Ödemeler
               </TabsTrigger>
               <TabsTrigger value="pricing" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
                 💰 Fiyatlar
-              </TabsTrigger>
+              </TabsTrigger> */}
               <TabsTrigger value="seo" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
                 🔍 SEO
               </TabsTrigger>
@@ -123,13 +124,14 @@ export default function AdminPage() {
             <ContactManagement />
           </TabsContent>
 
-          <TabsContent value="payments">
+          {/* Premium özellikler geçici olarak devre dışı */}
+          {/* <TabsContent value="payments">
             <PaymentsManagement />
           </TabsContent>
 
           <TabsContent value="pricing">
             <PricingManagement />
-          </TabsContent>
+          </TabsContent> */}
 
           <TabsContent value="seo">
             <SEOManagement />

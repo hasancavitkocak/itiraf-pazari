@@ -61,6 +61,7 @@ export async function GET(request: NextRequest) {
     const cityId = searchParams.get('city');
     const districtId = searchParams.get('district');
     const search = searchParams.get('search');
+    const sort = searchParams.get('sort') || 'newest';
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '6');
     const offset = (page - 1) * limit;
@@ -87,7 +88,6 @@ export async function GET(request: NextRequest) {
         districts(name)
       `)
       .eq('is_hidden', false)
-      .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
     let countQuery = supabase
@@ -125,6 +125,33 @@ export async function GET(request: NextRequest) {
     if (search) {
       query = query.or(`title.ilike.%${search}%,content.ilike.%${search}%`);
       countQuery = countQuery.or(`title.ilike.%${search}%,content.ilike.%${search}%`);
+    }
+
+    // Sıralama mantığı
+    switch (sort) {
+      case 'popular':
+        // Popülerlik = (likes * 2 + comments * 3) - (dislikes * 1)
+        // En popüler olanlar önce
+        query = query.order('likes_count', { ascending: false })
+                    .order('comments_count', { ascending: false })
+                    .order('created_at', { ascending: false });
+        break;
+      
+      case 'trending':
+        // Trend = Son 24 saatte oluşturulan ve popüler olanlar
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        query = query.gte('created_at', yesterday.toISOString())
+                    .order('likes_count', { ascending: false })
+                    .order('comments_count', { ascending: false })
+                    .order('created_at', { ascending: false });
+        break;
+      
+      case 'newest':
+      default:
+        // En yeni olanlar önce (varsayılan)
+        query = query.order('created_at', { ascending: false });
+        break;
     }
 
     const [{ data: posts, error }, { count }] = await Promise.all([

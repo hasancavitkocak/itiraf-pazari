@@ -110,6 +110,7 @@ export default function Home() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [reportReason, setReportReason] = useState('');
+  const [sortBy, setSortBy] = useState<'newest' | 'popular' | 'trending'>('newest');
 
   const fetchCategories = async () => {
     setCategoriesLoading(true);
@@ -185,6 +186,9 @@ export default function Home() {
         params.append('search', searchKeyword.trim());
       }
 
+      // Sıralama parametresi ekle
+      params.append('sort', sortBy);
+
       const response = await fetch(`/api/posts?${params}`);
       const data = await response.json();
       setPosts(data.posts || []);
@@ -202,7 +206,7 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, selectedCategory, selectedCity, selectedDistrict, searchKeyword, postsPerPage]);
+  }, [currentPage, selectedCategory, selectedCity, selectedDistrict, searchKeyword, sortBy, postsPerPage]);
 
   useEffect(() => {
     fetchCategories();
@@ -211,7 +215,7 @@ export default function Home() {
 
   useEffect(() => {
     setCurrentPage(1); // Reset to first page when filters change
-  }, [selectedCategory, selectedCity, selectedDistrict, searchKeyword]);
+  }, [selectedCategory, selectedCity, selectedDistrict, searchKeyword, sortBy]);
 
   useEffect(() => {
     if (selectedCity) {
@@ -533,6 +537,54 @@ export default function Home() {
               
 
 
+              {/* Sıralama Butonları - Mobil Optimize */}
+              <Card className="p-3 sm:p-4">
+                <div className="space-y-3">
+                  {/* Mobil: Başlık ve açıklama üstte */}
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div>
+                      <h3 className="text-base sm:text-lg font-semibold">İtirafları Sırala</h3>
+                      <div className="text-xs sm:text-sm text-muted-foreground">
+                        {sortBy === 'newest' && '⏰ En son paylaşılan itiraflar'}
+                        {sortBy === 'popular' && '❤️ En çok beğenilen ve yorumlanan itiraflar'}
+                        {sortBy === 'trending' && '🚀 Son 24 saatte popüler olan itiraflar'}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Mobil: Butonlar tam genişlik, masaüstü: yan yana */}
+                  <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:gap-2 sm:justify-end">
+                    <Button
+                      variant={sortBy === 'newest' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setSortBy('newest')}
+                      className="text-xs sm:text-sm h-8 sm:h-9"
+                    >
+                      <span className="sm:hidden">🕐</span>
+                      <span className="hidden sm:inline">🕐 En Yeni</span>
+                    </Button>
+                    <Button
+                      variant={sortBy === 'popular' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setSortBy('popular')}
+                      className="text-xs sm:text-sm h-8 sm:h-9"
+                    >
+                      <span className="sm:hidden">🔥</span>
+                      <span className="hidden sm:inline">🔥 Popüler</span>
+                    </Button>
+                    <Button
+                      variant={sortBy === 'trending' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setSortBy('trending')}
+                      className="text-xs sm:text-sm h-8 sm:h-9"
+                    >
+                      <span className="sm:hidden">📈</span>
+                      <span className="hidden sm:inline">📈 Trend</span>
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+
               {/* Collapsible Filter Area */}
               <Collapsible open={filterOpen} onOpenChange={setFilterOpen}>
                 <CollapsibleTrigger asChild>
@@ -553,8 +605,8 @@ export default function Home() {
                   </Button>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="mt-4">
-                  <Card className="p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                  <Card className="p-3 sm:p-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="category">Kategori</Label>
                         {categoriesLoading ? (
@@ -725,36 +777,72 @@ export default function Home() {
             </div>
           )}
 
-          {/* Pagination */}
+          {/* Pagination - Mobil Optimize */}
           {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 mt-8">
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-2 mt-8">
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
+                className="w-full sm:w-auto"
               >
-                Önceki
+                ← Önceki
               </Button>
 
-              <div className="flex gap-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                  <Button
-                    key={page}
-                    variant={currentPage === page ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setCurrentPage(page)}
-                  >
-                    {page}
+              {/* Mobil: Sadece mevcut sayfa göster, Desktop: Tüm sayfalar */}
+              <div className="flex gap-1 overflow-x-auto max-w-full">
+                {/* Mobil için sadece yakın sayfalar */}
+                <div className="flex gap-1 sm:hidden">
+                  {currentPage > 1 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                    >
+                      {currentPage - 1}
+                    </Button>
+                  )}
+                  <Button variant="default" size="sm">
+                    {currentPage}
                   </Button>
-                ))}
+                  {currentPage < totalPages && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                    >
+                      {currentPage + 1}
+                    </Button>
+                  )}
+                </div>
+
+                {/* Desktop için tüm sayfalar */}
+                <div className="hidden sm:flex gap-1">
+                  {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => i + 1).map(page => (
+                    <Button
+                      key={page}
+                      variant={currentPage === page ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentPage(page)}
+                    >
+                      {page}
+                    </Button>
+                  ))}
+                  {totalPages > 10 && (
+                    <span className="flex items-center px-2 text-muted-foreground">...</span>
+                  )}
+                </div>
               </div>
 
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
+                className="w-full sm:w-auto"
               >
-                Sonraki
+                Sonraki →
               </Button>
             </div>
           )}

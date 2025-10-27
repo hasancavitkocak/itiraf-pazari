@@ -65,10 +65,10 @@ export function PostCard({
       whileHover={{ scale: 1.01 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className={`p-6 card-hover ${post.is_boosted ? 'ring-2 ring-secondary' : ''}`}>
+      <Card className={`p-4 sm:p-6 card-hover ${post.is_boosted ? 'ring-2 ring-secondary' : ''}`}>
         <div className="space-y-4">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
               {post.categories && (
                 <Badge variant="secondary" className="gap-1">
                   <span>{post.categories.icon && post.categories.icon.length <= 2 ? post.categories.icon : '📁'}</span>
@@ -87,14 +87,14 @@ export function PostCard({
                 </Badge>
               )}
             </div>
-            <div className="text-right">
+            <div className="text-left sm:text-right">
               <div className="text-xs text-muted-foreground">
                 {formatDistanceToNow(new Date(post.created_at), {
                   addSuffix: true,
                   locale: tr,
                 })}
               </div>
-              <div className="text-xs text-muted-foreground/70">
+              <div className="text-xs text-muted-foreground/70 hidden sm:block">
                 {new Date(post.created_at).toLocaleString('tr-TR', {
                   day: '2-digit',
                   month: '2-digit',
@@ -107,7 +107,7 @@ export function PostCard({
           </div>
 
           {post.title && (
-            <h3 className="text-lg font-semibold text-foreground">
+            <h3 className="text-base sm:text-lg font-semibold text-foreground">
               {post.title}
             </h3>
           )}
@@ -141,19 +141,19 @@ export function PostCard({
             )}
           </div>
 
-          <div className="flex items-center justify-between pt-2">
-            <div className="flex items-center gap-1">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 pt-2">
+            <div className="flex items-center gap-1 flex-wrap">
               <Button
                 variant={userReaction === 'like' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => onLike(post.id)}
-                className={`gap-1.5 transition-all ${
+                className={`gap-1 sm:gap-1.5 transition-all text-xs sm:text-sm h-8 sm:h-9 ${
                   userReaction === 'like' 
                     ? 'bg-red-500 hover:bg-red-600 text-white' 
                     : 'hover:bg-red-50 hover:text-red-500'
                 }`}
               >
-                <Heart className={`h-4 w-4 ${userReaction === 'like' ? 'fill-current' : ''}`} />
+                <Heart className={`h-3 w-3 sm:h-4 sm:w-4 ${userReaction === 'like' ? 'fill-current' : ''}`} />
                 <span className="font-medium">{(post.likes_count || 0).toLocaleString('tr-TR')}</span>
               </Button>
 
@@ -161,13 +161,13 @@ export function PostCard({
                 variant={userReaction === 'dislike' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => onDislike(post.id)}
-                className={`gap-1.5 transition-all ${
+                className={`gap-1 sm:gap-1.5 transition-all text-xs sm:text-sm h-8 sm:h-9 ${
                   userReaction === 'dislike' 
                     ? 'bg-gray-500 hover:bg-gray-600 text-white' 
                     : 'hover:bg-gray-50 hover:text-gray-500'
                 }`}
               >
-                <ThumbsDown className={`h-4 w-4 ${userReaction === 'dislike' ? 'fill-current' : ''}`} />
+                <ThumbsDown className={`h-3 w-3 sm:h-4 sm:w-4 ${userReaction === 'dislike' ? 'fill-current' : ''}`} />
                 <span className="font-medium">{(post.dislikes_count || 0).toLocaleString('tr-TR')}</span>
               </Button>
 
@@ -175,30 +175,31 @@ export function PostCard({
                 variant="ghost"
                 size="sm"
                 onClick={() => onComment(post.id)}
-                className="gap-1.5 hover:bg-blue-50 hover:text-blue-500 transition-all"
+                className="gap-1 sm:gap-1.5 hover:bg-blue-50 hover:text-blue-500 transition-all text-xs sm:text-sm h-8 sm:h-9"
               >
-                <MessageCircle className="h-4 w-4" />
+                <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="font-medium">{(post.comments_count || 0).toLocaleString('tr-TR')}</span>
               </Button>
             </div>
 
-            <div className="flex gap-1">
+            <div className="flex gap-1 justify-end sm:justify-start">
               {onDelete && currentUserId && post.author_id === currentUserId && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => onDelete(post.id)}
-                  className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                  className="text-red-500 hover:text-red-700 hover:bg-red-50 h-8 sm:h-9"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                 </Button>
               )}
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => onReport(post.id)}
+                className="h-8 sm:h-9"
               >
-                <Flag className="h-4 w-4" />
+                <Flag className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             </div>
           </div>

@@ -38,6 +38,11 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/sss" className="text-muted-foreground hover:text-foreground transition-colors">
+                  SSS
+                </Link>
+              </li>
+              <li>
                 <Link href="/contact" className="text-muted-foreground hover:text-foreground transition-colors">
                   Bize Ulaşın
                 </Link>
