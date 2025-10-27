@@ -12,16 +12,33 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { User, Key, Loader as Loader2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { User, Key, Loader as Loader2, FileText, Trash2, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
 
+interface Post {
+  id: string;
+  title: string;
+  content: string;
+  created_at: string;
+  likes_count: number;
+  dislikes_count: number;
+  comments_count: number;
+  categories?: {
+    name: string;
+    icon: string;
+  };
+}
+
 export default function ProfilePage() {
   const { user, profile, refreshProfile, signOut } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [postsLoading, setPostsLoading] = useState(true);
+  const [posts, setPosts] = useState<Post[]>([]);
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -33,7 +50,40 @@ export default function ProfilePage() {
       return;
     }
 
+    // Kullanıcının gönderilerini yükle
+    fetchUserPosts();
   }, [user, profile, router]);
+
+  const fetchUserPosts = async () => {
+    if (!user) return;
+
+    setPostsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('posts')
+        .select(`
+          id,
+          title,
+          content,
+          created_at,
+          likes_count,
+          dislikes_count,
+          comments_count,
+          categories(name, icon)
+        `)
+        .eq('author_id', user.id)
+        .eq('is_hidden', false)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setPosts(data || []);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+      toast.error('Gönderiler yüklenirken hata oluştu');
+    } finally {
+      setPostsLoading(false);
+    }
+  };
 
 
 
@@ -119,101 +169,179 @@ export default function ProfilePage() {
               <User className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold">Profil Ayarları</h1>
+              <h1 className="text-3xl font-bold">Profilim</h1>
               <p className="text-muted-foreground">
-                Hesap bilgilerinizi yönetin
+                Gönderilerinizi ve hesap ayarlarınızı yönetin
               </p>
             </div>
           </div>
 
-          <div className="grid gap-6">
-            {/* Kullanıcı Bilgileri */}
-            <Card className="p-6">
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  <h2 className="text-xl font-semibold">Kullanıcı Bilgileri</h2>
+          <Tabs defaultValue="posts" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="posts" className="gap-2">
+                <FileText className="h-4 w-4" />
+                Gönderilerim
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="gap-2">
+                <Settings className="h-4 w-4" />
+                Ayarlar
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Gönderilerim Sekmesi */}
+            <TabsContent value="posts" className="space-y-4">
+              <Card className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-5 w-5" />
+                      <h2 className="text-xl font-semibold">Gönderilerim</h2>
+                    </div>
+                    <Badge variant="secondary">{posts.length} gönderi</Badge>
+                  </div>
+
+                  {postsLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    </div>
+                  ) : posts.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                      <p>Henüz gönderi paylaşmadınız</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {posts.map((post) => (
+                        <Card key={post.id} className="p-4 hover:bg-accent/50 transition-colors">
+                          <div className="space-y-2">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  {post.categories && (
+                                    <Badge variant="secondary" className="gap-1">
+                                      <span>{post.categories.icon}</span>
+                                      <span>{post.categories.name}</span>
+                                    </Badge>
+                                  )}
+                                </div>
+                                <h3 className="font-semibold text-sm mb-1 truncate">{post.title}</h3>
+                                <p className="text-sm text-muted-foreground line-clamp-2">{post.content}</p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center justify-between text-xs text-muted-foreground">
+                              <div className="flex items-center gap-3">
+                                <span>❤️ {post.likes_count}</span>
+                                <span>👎 {post.dislikes_count}</span>
+                                <span>💬 {post.comments_count}</span>
+                              </div>
+                              <span>
+                                {formatDistanceToNow(new Date(post.created_at), {
+                                  addSuffix: true,
+                                  locale: tr,
+                                })}
+                              </span>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
                 </div>
+              </Card>
+            </TabsContent>
 
-                <div className="space-y-3">
-                  <div>
-                    <Label className="text-sm text-muted-foreground">E-posta</Label>
-                    <p className="font-medium">{user.email}</p>
+            {/* Ayarlar Sekmesi */}
+            <TabsContent value="settings" className="space-y-4">
+              {/* Kullanıcı Bilgileri */}
+              <Card className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <User className="h-5 w-5" />
+                    <h2 className="text-xl font-semibold">Kullanıcı Bilgileri</h2>
                   </div>
 
-                  <div>
-                    <Label className="text-sm text-muted-foreground">Kullanıcı Adı</Label>
-                    <p className="font-medium">{profile.username || 'Anonim'}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Kullanıcı adınız otomatik olarak atanmıştır ve değiştirilemez
-                    </p>
-                  </div>
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-sm text-muted-foreground">Kullanıcı Adı (Nickname)</Label>
+                      <p className="font-medium">{profile?.nickname || 'Yükleniyor...'}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Bu sizin giriş yaptığınız kullanıcı adınızdır
+                      </p>
+                    </div>
 
-                  <div>
-                    <Label className="text-sm text-muted-foreground">Üyelik Tarihi</Label>
-                    <p className="font-medium">
-                      {new Date(profile.created_at).toLocaleDateString('tr-TR')}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </Card>
+                    <div>
+                      <Label className="text-sm text-muted-foreground">Anonim İsim</Label>
+                      <p className="font-medium">{profile?.username || 'Anonim'}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Yorumlarda görünen anonim isminiz (otomatik atanmıştır)
+                      </p>
+                    </div>
 
-
-          </div>
-
-          {/* Şifre Değiştirme */}
-          <Card className="p-6">
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Key className="h-5 w-5" />
-                <h2 className="text-xl font-semibold">Şifre Değiştir</h2>
-              </div>
-
-              <form onSubmit={handleChangePassword} className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-3">
-                  <div>
-                    <Label htmlFor="current-password">Mevcut Şifre</Label>
-                    <Input
-                      id="current-password"
-                      type="password"
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
-                      placeholder="••••••••"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="new-password">Yeni Şifre</Label>
-                    <Input
-                      id="new-password"
-                      type="password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="••••••••"
-                      minLength={6}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="confirm-password">Yeni Şifre (Tekrar)</Label>
-                    <Input
-                      id="confirm-password"
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="••••••••"
-                      minLength={6}
-                    />
+                    <div>
+                      <Label className="text-sm text-muted-foreground">Üyelik Tarihi</Label>
+                      <p className="font-medium">
+                        {profile?.created_at ? new Date(profile.created_at).toLocaleDateString('tr-TR') : 'Yükleniyor...'}
+                      </p>
+                    </div>
                   </div>
                 </div>
+              </Card>
 
-                <Button type="submit" disabled={loading}>
-                  {loading ? 'Değiştiriliyor...' : 'Şifreyi Değiştir'}
-                </Button>
-              </form>
-            </div>
-          </Card>
+              {/* Şifre Değiştirme */}
+              <Card className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Key className="h-5 w-5" />
+                    <h2 className="text-xl font-semibold">Şifre Değiştir</h2>
+                  </div>
+
+                  <form onSubmit={handleChangePassword} className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-3">
+                      <div>
+                        <Label htmlFor="current-password">Mevcut Şifre</Label>
+                        <Input
+                          id="current-password"
+                          type="password"
+                          value={currentPassword}
+                          onChange={(e) => setCurrentPassword(e.target.value)}
+                          placeholder="••••••••"
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="new-password">Yeni Şifre</Label>
+                        <Input
+                          id="new-password"
+                          type="password"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          placeholder="••••••••"
+                          minLength={6}
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="confirm-password">Yeni Şifre (Tekrar)</Label>
+                        <Input
+                          id="confirm-password"
+                          type="password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          placeholder="••••••••"
+                          minLength={6}
+                        />
+                      </div>
+                    </div>
+
+                    <Button type="submit" disabled={loading}>
+                      {loading ? 'Değiştiriliyor...' : 'Şifreyi Değiştir'}
+                    </Button>
+                  </form>
+                </div>
+              </Card>
+            </TabsContent>
+          </Tabs>
 
 
         </motion.div>

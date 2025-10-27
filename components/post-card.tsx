@@ -141,8 +141,8 @@ export function PostCard({
             )}
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 pt-2">
-            <div className="flex items-center gap-1 flex-wrap">
+          <div className="flex items-center justify-between pt-2">
+            <div className="flex items-center gap-1">
               <Button
                 variant={userReaction === 'like' ? 'default' : 'ghost'}
                 size="sm"
@@ -182,7 +182,7 @@ export function PostCard({
               </Button>
             </div>
 
-            <div className="flex gap-1 justify-end sm:justify-start">
+            <div className="flex gap-1">
               {onDelete && currentUserId && post.author_id === currentUserId && (
                 <Button
                   variant="ghost"

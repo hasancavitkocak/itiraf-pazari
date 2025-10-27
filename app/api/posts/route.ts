@@ -29,6 +29,15 @@ export async function POST(request: NextRequest) {
     const user_agent = request.headers.get("user-agent") || "unknown";
     const authorHash = `${user_ip}-${user_agent}`;
 
+    // Kullanıcı oturum kontrolü - Authorization header'dan token al
+    let authorId = null;
+    const authHeader = request.headers.get('authorization');
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user } } = await supabase.auth.getUser(token);
+      authorId = user?.id || null;
+    }
+
     const { data, error } = await supabase
       .from("posts")
       .insert({
@@ -39,6 +48,7 @@ export async function POST(request: NextRequest) {
         district_id: districtId || null,
         custom_location: filteredCustomLocation,
         author_ip_hash: authorHash,
+        author_id: authorId,
       })
       .select("*")
       .single();
@@ -169,14 +179,15 @@ export async function GET(request: NextRequest) {
     // Get usernames for posts with author_id and filter bad words
     const postsWithUsernames = await Promise.all(
       (posts || []).map(async (post) => {
-        let username = null;
+        let username = 'anonymous'; // Varsayılan olarak anonymous
+        
         if (post.author_id) {
           const { data: profile } = await supabase
             .from('profiles')
             .select('username')
             .eq('id', post.author_id)
             .single();
-          username = profile?.username || 'Anonim';
+          username = profile?.username || 'anonymous';
         }
 
         // Yasaklı kelimeleri filtrele

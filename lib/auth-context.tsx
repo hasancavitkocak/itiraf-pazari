@@ -7,6 +7,7 @@ import { supabase } from './supabase';
 interface Profile {
   id: string;
   username: string | null;
+  nickname: string;
   role: string;
   is_premium: boolean;
   premium_expires_at: string | null;
@@ -18,8 +19,8 @@ interface AuthContextType {
   user: User | null;
   profile: Profile | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  signIn: (nickname: string, password: string) => Promise<void>;
+  signUp: (nickname: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -74,7 +75,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (nickname: string, password: string) => {
+    // Nickname'den email'e çevir
+    const email = `${nickname}@anonymous.local`;
+    
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -83,13 +87,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw error;
   };
 
-  const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
+  const signUp = async (nickname: string, password: string) => {
+    // Nickname benzersizlik kontrolü
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('nickname', nickname)
+      .maybeSingle();
+
+    if (existingProfile) {
+      throw new Error('Bu kullanıcı adı zaten kullanılıyor');
+    }
+
+    // Nickname'den email'e çevir
+    const email = `${nickname}@anonymous.local`;
+    
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
     });
 
     if (error) throw error;
+    
+    // Manuel olarak profil oluştur
+    if (data.user) {
+      // Anonim username oluştur
+      const randomNum = Math.floor(Math.random() * 900000 + 100000);
+      const username = `anonymous${randomNum}`;
+      
+      // Profil oluştur veya güncelle
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: data.user.id,
+          username: username,
+          nickname: nickname,
+          role: 'user',
+          is_premium: false,
+          is_banned: false
+        }, {
+          onConflict: 'id'
+        });
+      
+      if (profileError) {
+        console.error('Profil oluşturma hatası:', profileError);
+        throw new Error('Profil oluşturulamadı');
+      }
+    }
   };
 
   const signOut = async () => {

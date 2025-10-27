@@ -118,9 +118,21 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
     setLoading(true);
 
     try {
+      // Supabase session token'ı al
+      const { data: { session } } = await (await import('@/lib/supabase')).supabase.auth.getSession();
+      
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      
+      // Eğer kullanıcı giriş yapmışsa token ekle
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+      
       const response = await fetch('/api/posts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ 
           title: title.trim(),
           content: content.trim(), 

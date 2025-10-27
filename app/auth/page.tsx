@@ -14,7 +14,7 @@ import Link from 'next/link';
 import { Footer } from '@/components/footer';
 
 export default function AuthPage() {
-  const [email, setEmail] = useState('');
+  const [nickname, setNickname] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn, signUp } = useAuth();
@@ -25,7 +25,7 @@ export default function AuthPage() {
     setLoading(true);
 
     try {
-      await signIn(email, password);
+      await signIn(nickname, password);
       toast.success('Giriş başarılı!');
       router.push('/');
     } catch (error: any) {
@@ -40,11 +40,11 @@ export default function AuthPage() {
     setLoading(true);
 
     try {
-      await signUp(email, password);
+      await signUp(nickname, password);
       toast.success('Kayıt başarılı! Otomatik giriş yapılıyor...');
       
       // Kayıt başarılı olduktan sonra otomatik giriş yap
-      await signIn(email, password);
+      await signIn(nickname, password);
       router.push('/');
     } catch (error: any) {
       toast.error(error.message || 'Kayıt oluşturulamadı');
@@ -82,13 +82,13 @@ export default function AuthPage() {
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email">E-posta</Label>
+                  <Label htmlFor="signin-nickname">Kullanıcı Adı</Label>
                   <Input
-                    id="signin-email"
-                    type="email"
-                    placeholder="ornek@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    id="signin-nickname"
+                    type="text"
+                    placeholder="kullaniciadi"
+                    value={nickname}
+                    onChange={(e) => setNickname(e.target.value)}
                     required
                   />
                 </div>
@@ -114,15 +114,21 @@ export default function AuthPage() {
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">E-posta</Label>
+                  <Label htmlFor="signup-nickname">Kullanıcı Adı</Label>
                   <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="ornek@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    id="signup-nickname"
+                    type="text"
+                    placeholder="kullaniciadi"
+                    value={nickname}
+                    onChange={(e) => setNickname(e.target.value)}
                     required
+                    minLength={3}
+                    maxLength={20}
+                    pattern="[a-zA-Z0-9_]+"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    3-20 karakter, sadece harf, rakam ve alt çizgi
+                  </p>
                 </div>
 
                 <div className="space-y-2">
