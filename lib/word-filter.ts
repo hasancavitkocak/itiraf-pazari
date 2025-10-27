@@ -22,7 +22,7 @@ export function censorWord(word: string): string {
   }
 }
 
-// Beyaz liste - bu kelimeler filtrelenmeyecek
+// Beyaz liste - bu kelimeler filtrelenmeyecek (normal kelimeler)
 const whiteList = [
   'akşam', 'akşamları', 'akşamleyin', 'akşamüstü',
   'islam', 'islami', 'islamiyet',
@@ -31,7 +31,8 @@ const whiteList = [
   'amp', 'amper', 'ampul',
   'tam', 'tamam', 'tamamen', 'tamami',
   'yam', 'yamyam', 'yamuk',
-  'ham', 'hamam', 'hamur', 'hamsi'
+  'ham', 'hamam', 'hamur', 'hamsi',
+  'ama', 'amaç', 'amaçla', 'amaçlı', 'amaçsız'
 ];
 
 // Kelime tam olarak yasaklı kelime mi kontrol et
@@ -39,8 +40,8 @@ function isExactBadWord(word: string, badWord: string): boolean {
   const cleanWord = word.toLowerCase().trim();
   const cleanBadWord = badWord.toLowerCase().trim();
   
-  // Beyaz listede varsa filtreleme
-  if (whiteList.some(whiteWord => cleanWord.includes(whiteWord))) {
+  // Önce beyaz liste kontrolü - TAM KELIME eşleşmesi
+  if (whiteList.some(whiteWord => cleanWord === whiteWord.toLowerCase())) {
     return false;
   }
   

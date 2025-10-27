@@ -65,6 +65,8 @@ export function PostsManagement() {
     custom_location: ''
   });
 
+  const [fixingPosts, setFixingPosts] = useState(false);
+
   useEffect(() => {
     fetchPosts();
     fetchCategories();
@@ -90,6 +92,33 @@ export function PostsManagement() {
       setCategories(data.categories || []);
     } catch (error) {
       console.error('Error fetching categories:', error);
+    }
+  };
+
+  const handleFixFilteredPosts = async () => {
+    if (!confirm('Yanlış filtrelenmiş gönderiler düzeltilecek. Devam etmek istiyor musunuz?')) {
+      return;
+    }
+
+    setFixingPosts(true);
+    try {
+      const response = await fetch('/api/admin/fix-posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success(`${data.fixedCount} gönderi başarıyla düzeltildi!`);
+        fetchPosts(); // Gönderileri yenile
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Düzeltme işlemi başarısız');
+    } finally {
+      setFixingPosts(false);
     }
   };
 
@@ -171,9 +200,19 @@ export function PostsManagement() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-xl sm:text-2xl font-bold">Gönderi Yönetimi</h2>
-        <Badge variant="outline" className="text-sm">
-          Toplam {posts.length} gönderi
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            onClick={handleFixFilteredPosts}
+            disabled={fixingPosts}
+            className="gap-2"
+          >
+            {fixingPosts ? '🔄 Düzeltiliyor...' : '🔧 Filtrelenmiş Gönderileri Düzelt'}
+          </Button>
+          <Badge variant="outline" className="text-sm">
+            Toplam {posts.length} gönderi
+          </Badge>
+        </div>
       </div>
 
       <div className="grid gap-4">
