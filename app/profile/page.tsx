@@ -30,7 +30,7 @@ interface Post {
   categories?: {
     name: string;
     icon: string;
-  };
+  } | null;
 }
 
 export default function ProfilePage() {
@@ -69,14 +69,21 @@ export default function ProfilePage() {
           likes_count,
           dislikes_count,
           comments_count,
-          categories(name, icon)
+          categories!inner(name, icon)
         `)
         .eq('author_id', user.id)
         .eq('is_hidden', false)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPosts(data || []);
+      
+      // Supabase'den gelen veriyi düzelt
+      const formattedPosts = (data || []).map((post: any) => ({
+        ...post,
+        categories: Array.isArray(post.categories) ? post.categories[0] : post.categories
+      }));
+      
+      setPosts(formattedPosts);
     } catch (error) {
       console.error('Error fetching posts:', error);
       toast.error('Gönderiler yüklenirken hata oluştu');
