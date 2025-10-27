@@ -2,6 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Mobil optimizasyonları */
+@layer base {
+  /* iOS'ta input zoom'unu engelle */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+  
+  /* Mobil cihazlarda viewport ayarları */
+  @media screen and (max-width: 768px) {
+    input,
+    textarea,
+    select {
+      font-size: 16px !important;
+      transform: translateZ(0);
+      -webkit-appearance: none;
+    }
+  }
+  
+  /* Dialog overlay mobil optimizasyonu */
+  [data-radix-popper-content-wrapper] {
+    z-index: 9999 !important;
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 98%;

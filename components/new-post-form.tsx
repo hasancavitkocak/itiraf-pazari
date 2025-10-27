@@ -174,6 +174,9 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
               placeholder="İtirafınızın başlığını yazın..."
               maxLength={100}
               disabled={loading}
+              autoFocus={false}
+              autoComplete="off"
+              className="text-base" // iOS'ta zoom'u engellemek için
             />
             <div className="text-xs text-muted-foreground text-right">
               {title.length}/100
@@ -190,6 +193,9 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
               rows={4}
               maxLength={1000}
               disabled={loading}
+              autoFocus={false}
+              autoComplete="off"
+              className="text-base resize-none" // iOS'ta zoom'u engellemek için
             />
             <div className="text-xs text-muted-foreground text-right">
               {content.length}/1000

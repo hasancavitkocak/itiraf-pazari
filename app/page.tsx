@@ -850,14 +850,25 @@ export default function Home() {
       </main>
 
       <Dialog open={commentDialogOpen} onOpenChange={setCommentDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Yorumlar</DialogTitle>
+        <DialogContent className="max-w-lg w-[95vw] max-h-[85vh] p-4 sm:p-6">
+          <DialogHeader className="space-y-3">
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-lg">Yorumlar</DialogTitle>
+              {/* Mobil için büyük kapatma butonu */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCommentDialogOpen(false)}
+                className="h-8 w-8 rounded-full bg-muted/80 hover:bg-muted"
+              >
+                <span className="text-lg">×</span>
+              </Button>
+            </div>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="max-h-[300px] overflow-y-auto space-y-3">
+            <div className="max-h-[250px] sm:max-h-[300px] overflow-y-auto space-y-3">
               {comments.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Henüz yorum yok</p>
+                <p className="text-sm text-muted-foreground text-center py-4">Henüz yorum yok</p>
               ) : (
                 comments.map((comment) => (
                   <div key={comment.id} className="p-3 bg-muted rounded-lg">
@@ -881,9 +892,9 @@ export default function Home() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDeleteComment(comment.id)}
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1"
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1 h-6 w-6"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3 w-3" />
                         </Button>
                       )}
                     </div>
@@ -891,15 +902,18 @@ export default function Home() {
                 ))
               )}
             </div>
-            <div className="space-y-2">
-              <Label>Yorum Ekle</Label>
+            <div className="space-y-3">
+              <Label className="text-sm">Yorum Ekle</Label>
               <Textarea
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="Yorumunuzu yazın..."
                 rows={3}
+                autoFocus={false}
+                autoComplete="off"
+                className="text-base resize-none" // iOS zoom engellemek için
               />
-              <Button onClick={handleSubmitComment} className="w-full">
+              <Button onClick={handleSubmitComment} className="w-full" size="sm">
                 Yorum Yap
               </Button>
             </div>
@@ -908,12 +922,25 @@ export default function Home() {
       </Dialog>
 
       <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Gönderiyi Bildir</DialogTitle>
-            <DialogDescription>
-              Bu gönderiyi neden bildirmek istiyorsunuz?
-            </DialogDescription>
+        <DialogContent className="max-w-lg w-[95vw] p-4 sm:p-6">
+          <DialogHeader className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <DialogTitle className="text-lg">Gönderiyi Bildir</DialogTitle>
+                <DialogDescription className="text-sm mt-1">
+                  Bu gönderiyi neden bildirmek istiyorsunuz?
+                </DialogDescription>
+              </div>
+              {/* Mobil için büyük kapatma butonu */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setReportDialogOpen(false)}
+                className="h-8 w-8 rounded-full bg-muted/80 hover:bg-muted"
+              >
+                <span className="text-lg">×</span>
+              </Button>
+            </div>
           </DialogHeader>
           <div className="space-y-4">
             <Textarea
@@ -921,6 +948,9 @@ export default function Home() {
               onChange={(e) => setReportReason(e.target.value)}
               placeholder="Neden..."
               rows={4}
+              autoFocus={false}
+              autoComplete="off"
+              className="text-base resize-none"
             />
             <Button onClick={handleSubmitReport} className="w-full">
               Bildir
@@ -929,16 +959,28 @@ export default function Home() {
         </DialogContent>
       </Dialog>
 
-      {/* New Post Dialog */}
+      {/* New Post Dialog - Mobil Optimize */}
       <Dialog open={newPostDialogOpen} onOpenChange={setNewPostDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto w-[95vw] sm:w-full">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-xl">
-              <Sparkles className="h-6 w-6 text-purple-600" />
-              Kayıt Gerektirmez, Sadece Cesaret - Yeni İtiraf Paylaş
-            </DialogTitle>
-            <DialogDescription>
-              İtirafınızı tamamen anonim olarak paylaşın. Kimlik bilgileriniz saklanmaz ve kimse sizin kim olduğunuzu bilemez.
+        <DialogContent className="max-w-4xl max-h-[90vh] sm:max-h-[95vh] overflow-y-auto w-[95vw] sm:w-full p-4 sm:p-6">
+          <DialogHeader className="space-y-3">
+            <div className="flex items-center justify-between">
+              <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl pr-8">
+                <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
+                <span className="hidden sm:inline">Kayıt Gerektirmez, Sadece Cesaret - Yeni İtiraf Paylaş</span>
+                <span className="sm:hidden">Yeni İtiraf Paylaş</span>
+              </DialogTitle>
+              {/* Mobil için büyük kapatma butonu */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setNewPostDialogOpen(false)}
+                className="absolute top-2 right-2 sm:top-4 sm:right-4 h-8 w-8 sm:h-6 sm:w-6 rounded-full bg-muted/80 hover:bg-muted z-50"
+              >
+                <span className="text-lg sm:text-base">×</span>
+              </Button>
+            </div>
+            <DialogDescription className="text-sm sm:text-base">
+              İtirafınızı tamamen anonim olarak paylaşın. Kimlik bilgileriniz saklanmaz.
             </DialogDescription>
           </DialogHeader>
           <div className="mt-4">
