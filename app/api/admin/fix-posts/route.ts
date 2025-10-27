@@ -24,10 +24,12 @@ const corrections = {
   'ta*****': 'tamamen',
   'h**': 'ham',
   'ha***': 'hamam',
-  'ha***': 'hamur',
+  'ha****': 'hamur',
+  'ha****i': 'hamsi',
   'a**': 'ama',
   'a****': 'amaç',
-  'a*****': 'amaçla'
+  'a*****': 'amaçla',
+  'a******': 'amaçlı'
 }
 
 export async function POST(request: NextRequest) {

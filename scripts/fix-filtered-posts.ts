@@ -22,9 +22,9 @@ const corrections = {
   'ka**': 'kamp',
   'ka******': 'kampanya',
   'ka****': 'kampus',
-  'a**': 'amp',
-  'a****': 'amper',
-  'a****': 'ampul',
+  'am*': 'amp',
+  'am***': 'amper',
+  'am****': 'ampul',
   't**': 'tam',
   'ta***': 'tamam',
   'ta*****': 'tamamen',
@@ -34,13 +34,13 @@ const corrections = {
   'ya***': 'yamuk',
   'h**': 'ham',
   'ha***': 'hamam',
-  'ha***': 'hamur',
-  'ha***': 'hamsi',
-  'a**': 'ama',
-  'a****': 'amaç',
-  'a*****': 'amaçla',
-  'a*****': 'amaçlı',
-  'a******': 'amaçsız'
+  'ha****': 'hamur',
+  'ha****i': 'hamsi',
+  'am**': 'ama',
+  'am***c': 'amaç',
+  'am****a': 'amaçla',
+  'am****ı': 'amaçlı',
+  'am*****z': 'amaçsız'
 }
 
 async function fixFilteredPosts() {
