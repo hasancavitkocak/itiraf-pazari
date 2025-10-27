@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
@@ -11,14 +11,42 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Footer } from '@/components/footer';
 
 export default function AuthPage() {
   const [nickname, setNickname] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [siteLogo, setSiteLogo] = useState<string>('');
+  const [siteName, setSiteName] = useState<string>('İtiraf Pazarı');
+  const [isLoading, setIsLoading] = useState(true);
   const { signIn, signUp } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    // Site ayarlarını yükle
+    const fetchSiteSettings = async () => {
+      try {
+        const response = await fetch('/api/site-settings');
+        if (response.ok) {
+          const settings = await response.json();
+          if (settings.site_logo) {
+            setSiteLogo(settings.site_logo);
+          }
+          if (settings.site_name) {
+            setSiteName(settings.site_name);
+          }
+        }
+      } catch (error) {
+        console.error('Site ayarları yüklenirken hata:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSiteSettings();
+  }, []);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,9 +91,27 @@ export default function AuthPage() {
       >
         <div className="text-center mb-8">
           <Link href="/">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              İtiraf Pazarı
-            </h1>
+            {!isLoading && siteLogo ? (
+              <div className="flex justify-center mb-2">
+                <Image
+                  src={siteLogo}
+                  alt={siteName}
+                  width={220}
+                  height={60}
+                  className="h-16 w-auto object-contain"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
+              </div>
+            ) : !isLoading ? (
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                {siteName}
+              </h1>
+            ) : (
+              <div className="h-16 w-full"></div>
+            )}
           </Link>
           <p className="text-muted-foreground mt-2">
             Anonim olarak itiraflarınızı paylaşın
