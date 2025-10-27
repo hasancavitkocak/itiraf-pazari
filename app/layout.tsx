@@ -98,21 +98,19 @@ export default function RootLayout({
     <html lang="tr" suppressHydrationWarning>
       <head>
         {/* Google Tag Manager */}
-        {process.env.NEXT_PUBLIC_GTM_ID && (
-          <Script
-            id="google-tag-manager"
-            strategy="afterInteractive"
-            dangerouslySetInnerHTML={{
-              __html: `
-                (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-                new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-                j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-                'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-                })(window,document,'script','dataLayer','${process.env.NEXT_PUBLIC_GTM_ID}');
-              `,
-            }}
-          />
-        )}
+        <Script
+          id="google-tag-manager"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+              new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+              'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+              })(window,document,'script','dataLayer','GTM-M7FRH2RQ');
+            `,
+          }}
+        />
 
         {/* Google Search Console Verification */}
         <meta name="google-site-verification" content="4becba0bddfacfab" />
@@ -123,40 +121,36 @@ export default function RootLayout({
         {/* Structured Data */}
         <StructuredData />
         {/* Google Analytics */}
-        {process.env.NEXT_PUBLIC_GA_ID && (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
-              strategy="afterInteractive"
-            />
-            <Script
-              id="google-analytics"
-              strategy="afterInteractive"
-              dangerouslySetInnerHTML={{
-                __html: `
-                  window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);}
-                  gtag('js', new Date());
-                  gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}', {
-                    page_title: document.title,
-                    page_location: window.location.href,
-                    anonymize_ip: true,
-                    allow_google_signals: false,
-                    allow_ad_personalization_signals: false
-                  });
-                  
-                  // Enhanced ecommerce tracking for premium features
-                  gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}', {
-                    custom_map: {
-                      'custom_parameter_1': 'category',
-                      'custom_parameter_2': 'post_type'
-                    }
-                  });
-                `,
-              }}
-            />
-          </>
-        )}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-LRDT6LZEYW"
+          strategy="afterInteractive"
+        />
+        <Script
+          id="google-analytics"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-LRDT6LZEYW', {
+                page_title: document.title,
+                page_location: window.location.href,
+                anonymize_ip: true,
+                allow_google_signals: false,
+                allow_ad_personalization_signals: false
+              });
+              
+              // Enhanced ecommerce tracking for premium features
+              gtag('config', 'G-LRDT6LZEYW', {
+                custom_map: {
+                  'custom_parameter_1': 'category',
+                  'custom_parameter_2': 'post_type'
+                }
+              });
+            `,
+          }}
+        />
 
         {/* Google AdSense */}
         {process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_ID && (
@@ -184,16 +178,14 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         {/* Google Tag Manager (noscript) */}
-        {process.env.NEXT_PUBLIC_GTM_ID && (
-          <noscript>
-            <iframe 
-              src={`https://www.googletagmanager.com/ns.html?id=${process.env.NEXT_PUBLIC_GTM_ID}`}
-              height="0" 
-              width="0" 
-              style={{ display: 'none', visibility: 'hidden' }}
-            />
-          </noscript>
-        )}
+        <noscript>
+          <iframe 
+            src="https://www.googletagmanager.com/ns.html?id=GTM-M7FRH2RQ"
+            height="0" 
+            width="0" 
+            style={{ display: 'none', visibility: 'hidden' }}
+          />
+        </noscript>
         
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <AuthProvider>
