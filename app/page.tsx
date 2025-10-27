@@ -29,7 +29,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChevronDown, ChevronUp, Filter, Plus, Sparkles, Heart } from 'lucide-react';
+import { ChevronDown, ChevronUp, Filter, Plus, Sparkles } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface Category {
@@ -359,11 +359,11 @@ export default function Home() {
       const newCommentData = await response.json();
       setComments(prev => [newCommentData.comment, ...prev]);
 
-      // Update comment count in posts - gerçek yorum sayısına göre güncelle
+      // Update comment count in posts
       setPosts(prevPosts =>
         prevPosts.map(post =>
           post.id === selectedPostId
-            ? { ...post, comments_count: comments.length + 1 }
+            ? { ...post, comments_count: (post.comments_count || 0) + 1 }
             : post
         )
       );
@@ -397,11 +397,11 @@ export default function Home() {
       // Optimistic update - immediately remove from UI
       setComments(prevComments => prevComments.filter(comment => comment.id !== commentId));
 
-      // Update comment count in posts - gerçek yorum sayısına göre güncelle
+      // Update comment count in posts
       setPosts(prevPosts =>
         prevPosts.map(post =>
           post.id === selectedPostId
-            ? { ...post, comments_count: Math.max(0, comments.length - 1) }
+            ? { ...post, comments_count: Math.max(0, (post.comments_count || 0) - 1) }
             : post
         )
       );
@@ -851,19 +851,8 @@ export default function Home() {
 
       <Dialog open={commentDialogOpen} onOpenChange={setCommentDialogOpen}>
         <DialogContent className="max-w-lg w-[95vw] max-h-[85vh] p-4 sm:p-6">
-          <DialogHeader className="space-y-3">
-            <div className="flex items-center justify-between">
-              <DialogTitle className="text-lg">Yorumlar</DialogTitle>
-              {/* Mobil için büyük kapatma butonu */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setCommentDialogOpen(false)}
-                className="h-8 w-8 rounded-full bg-muted/80 hover:bg-muted"
-              >
-                <span className="text-lg">×</span>
-              </Button>
-            </div>
+          <DialogHeader>
+            <DialogTitle className="text-lg">Yorumlar</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="max-h-[250px] sm:max-h-[300px] overflow-y-auto space-y-3">
@@ -923,24 +912,11 @@ export default function Home() {
 
       <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
         <DialogContent className="max-w-lg w-[95vw] p-4 sm:p-6">
-          <DialogHeader className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <DialogTitle className="text-lg">Gönderiyi Bildir</DialogTitle>
-                <DialogDescription className="text-sm mt-1">
-                  Bu gönderiyi neden bildirmek istiyorsunuz?
-                </DialogDescription>
-              </div>
-              {/* Mobil için büyük kapatma butonu */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setReportDialogOpen(false)}
-                className="h-8 w-8 rounded-full bg-muted/80 hover:bg-muted"
-              >
-                <span className="text-lg">×</span>
-              </Button>
-            </div>
+          <DialogHeader>
+            <DialogTitle className="text-lg">Gönderiyi Bildir</DialogTitle>
+            <DialogDescription className="text-sm">
+              Bu gönderiyi neden bildirmek istiyorsunuz?
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <Textarea
@@ -962,23 +938,12 @@ export default function Home() {
       {/* New Post Dialog - Mobil Optimize */}
       <Dialog open={newPostDialogOpen} onOpenChange={setNewPostDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] sm:max-h-[95vh] overflow-y-auto w-[95vw] sm:w-full p-4 sm:p-6">
-          <DialogHeader className="space-y-3">
-            <div className="flex items-center justify-between">
-              <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl pr-8">
-                <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
-                <span className="hidden sm:inline">Kayıt Gerektirmez, Sadece Cesaret - Yeni İtiraf Paylaş</span>
-                <span className="sm:hidden">Yeni İtiraf Paylaş</span>
-              </DialogTitle>
-              {/* Mobil için büyük kapatma butonu */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setNewPostDialogOpen(false)}
-                className="absolute top-2 right-2 sm:top-4 sm:right-4 h-8 w-8 sm:h-6 sm:w-6 rounded-full bg-muted/80 hover:bg-muted z-50"
-              >
-                <span className="text-lg sm:text-base">×</span>
-              </Button>
-            </div>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
+              <span className="hidden sm:inline">Kayıt Gerektirmez, Sadece Cesaret - Yeni İtiraf Paylaş</span>
+              <span className="sm:hidden">Yeni İtiraf Paylaş</span>
+            </DialogTitle>
             <DialogDescription className="text-sm sm:text-base">
               İtirafınızı tamamen anonim olarak paylaşın. Kimlik bilgileriniz saklanmaz.
             </DialogDescription>

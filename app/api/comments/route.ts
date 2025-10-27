@@ -102,9 +102,17 @@ export async function POST(request: NextRequest) {
 
     if (error) throw error;
 
-    // Update comment count in posts table
+    // Update comment count in posts table - manuel olarak hesapla
+    const { data: commentCount } = await supabaseAdmin
+      .from('comments')
+      .select('id', { count: 'exact' })
+      .eq('post_id', post_id)
+      .eq('is_hidden', false);
+
     const { error: updateError } = await supabaseAdmin
-      .rpc('increment_comment_count', { post_id });
+      .from('posts')
+      .update({ comments_count: commentCount?.length || 0 })
+      .eq('id', post_id);
 
     if (updateError) {
       console.error('Error updating comment count:', updateError);

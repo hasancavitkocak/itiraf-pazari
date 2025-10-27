@@ -66,6 +66,7 @@ export function PostsManagement() {
   });
 
   const [fixingPosts, setFixingPosts] = useState(false);
+  const [fixingCommentCounts, setFixingCommentCounts] = useState(false);
 
   useEffect(() => {
     fetchPosts();
@@ -119,6 +120,33 @@ export function PostsManagement() {
       toast.error(error.message || 'Düzeltme işlemi başarısız');
     } finally {
       setFixingPosts(false);
+    }
+  };
+
+  const handleFixCommentCounts = async () => {
+    if (!confirm('Tüm gönderilerin yorum sayıları yeniden hesaplanacak. Devam etmek istiyor musunuz?')) {
+      return;
+    }
+
+    setFixingCommentCounts(true);
+    try {
+      const { adminFetch } = await import('@/lib/api-client');
+      const response = await adminFetch('/api/admin/fix-comment-counts', {
+        method: 'POST',
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success(`${data.fixedCount} gönderinin yorum sayısı düzeltildi!`);
+        fetchPosts(); // Gönderileri yenile
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Yorum sayıları düzeltilemedi');
+    } finally {
+      setFixingCommentCounts(false);
     }
   };
 
@@ -200,15 +228,25 @@ export function PostsManagement() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-xl sm:text-2xl font-bold">Gönderi Yönetimi</h2>
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            onClick={handleFixFilteredPosts}
-            disabled={fixingPosts}
-            className="gap-2"
-          >
-            {fixingPosts ? '🔄 Düzeltiliyor...' : '🔧 Filtrelenmiş Gönderileri Düzelt'}
-          </Button>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={handleFixFilteredPosts}
+              disabled={fixingPosts}
+              className="gap-2 text-xs sm:text-sm"
+            >
+              {fixingPosts ? '🔄 Düzeltiliyor...' : '🔧 Filtrelenmiş Gönderileri Düzelt'}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleFixCommentCounts}
+              disabled={fixingCommentCounts}
+              className="gap-2 text-xs sm:text-sm"
+            >
+              {fixingCommentCounts ? '🔄 Hesaplanıyor...' : '💬 Yorum Sayılarını Düzelt'}
+            </Button>
+          </div>
           <Badge variant="outline" className="text-sm">
             Toplam {posts.length} gönderi
           </Badge>
