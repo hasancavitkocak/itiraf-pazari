@@ -66,18 +66,26 @@ Sitemap: https://itirafpazari.com/sitemap.xml`,
 // SEO ayarlarını güncelle
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies()
-    const authCookie = cookieStore.get('sb-access-token')
+    // Authorization header'dan token al
+    const authHeader = request.headers.get('authorization')
+    const token = authHeader?.replace('Bearer ', '')
 
-    if (!authCookie) {
+    if (!token) {
       return NextResponse.json(
-        { success: false, error: 'Yetkilendirme gerekli' },
+        { success: false, error: 'Yetkilendirme token\'ı gerekli' },
         { status: 401 }
       )
     }
 
-    // Admin kontrolü
-    const { data: { user }, error: authError } = await supabase.auth.getUser(authCookie.value)
+    // Token ile user bilgisini al
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { success: false, error: 'Geçersiz yetkilendirme token\'ı' },
+        { status: 401 }
+      )
+    }
     
     if (authError || !user) {
       return NextResponse.json(
