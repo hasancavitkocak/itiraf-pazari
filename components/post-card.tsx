@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Heart, MessageCircle, ThumbsDown, Flag, Sparkles, Trash2 } from 'lucide-react';
+import { Heart, MessageCircle, ThumbsDown, Flag, Sparkles, Trash2, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -38,6 +38,7 @@ interface PostCardProps {
   onDislike: (postId: string) => void;
   onComment: (postId: string) => void;
   onReport: (postId: string) => void;
+  onShare: (postId: string) => void;
   onDelete?: (postId: string) => void;
   userReaction?: 'like' | 'dislike' | null;
   currentUserId?: string;
@@ -48,6 +49,7 @@ export function PostCard({
   onLike,
   onDislike,
   onComment,
+  onShare,
   onReport,
   onDelete,
   userReaction,
@@ -193,6 +195,15 @@ export function PostCard({
                   <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                 </Button>
               )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onShare(post.id)}
+                className="h-8 sm:h-9 hover:bg-green-50 hover:text-green-500"
+                title="Paylaş"
+              >
+                <Share2 className="h-3 w-3 sm:h-4 sm:w-4" />
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"

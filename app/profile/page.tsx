@@ -286,6 +286,27 @@ export default function ProfilePage() {
                     </div>
 
                     <div>
+                      <Label className="text-sm text-muted-foreground">Doğum Yılı</Label>
+                      <p className="font-medium">{profile?.birth_year || 'Belirtilmemiş'}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Kayıt sırasında belirttiğiniz doğum yılı
+                      </p>
+                    </div>
+
+                    <div>
+                      <Label className="text-sm text-muted-foreground">Cinsiyet</Label>
+                      <p className="font-medium">
+                        {profile?.gender === 'kadın' ? 'Kadın' : 
+                         profile?.gender === 'erkek' ? 'Erkek' : 
+                         profile?.gender === 'belirtmek_istemiyorum' ? 'Belirtmek istemiyorum' : 
+                         'Belirtilmemiş'}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Kayıt sırasında belirttiğiniz cinsiyet
+                      </p>
+                    </div>
+
+                    <div>
                       <Label className="text-sm text-muted-foreground">Üyelik Tarihi</Label>
                       <p className="font-medium">
                         {profile?.created_at ? new Date(profile.created_at).toLocaleDateString('tr-TR') : 'Yükleniyor...'}

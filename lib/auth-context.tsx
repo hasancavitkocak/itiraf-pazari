@@ -8,11 +8,16 @@ interface Profile {
   id: string;
   username: string | null;
   nickname: string;
+  login_username: string | null;
+  display_username: string | null;
+  email: string | null;
   role: string;
   is_premium: boolean;
   premium_expires_at: string | null;
   is_banned: boolean;
   created_at: string;
+  birth_year: number | null;
+  gender: string | null;
 }
 
 interface AuthContextType {
@@ -20,7 +25,7 @@ interface AuthContextType {
   profile: Profile | null;
   loading: boolean;
   signIn: (nickname: string, password: string) => Promise<void>;
-  signUp: (nickname: string, password: string) => Promise<void>;
+  signUp: (nickname: string, password: string, birthYear: string, gender: string) => Promise<void>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -87,7 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw error;
   };
 
-  const signUp = async (nickname: string, password: string) => {
+  const signUp = async (nickname: string, password: string, birthYear: string, gender: string) => {
     // Nickname benzersizlik kontrolü
     const { data: existingProfile } = await supabase
       .from('profiles')
@@ -116,16 +121,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const username = `anonymous${randomNum}`;
       
       // Profil oluştur veya güncelle
+      const profileData: any = {
+        id: data.user.id,
+        username: username,
+        nickname: nickname,
+        role: 'user',
+        is_premium: false,
+        is_banned: false
+      };
+
+      // Doğum yılı ve cinsiyet ekle (zorunlu)
+      profileData.birth_year = parseInt(birthYear);
+      profileData.gender = gender;
+
       const { error: profileError } = await supabase
         .from('profiles')
-        .upsert({
-          id: data.user.id,
-          username: username,
-          nickname: nickname,
-          role: 'user',
-          is_premium: false,
-          is_banned: false
-        }, {
+        .upsert(profileData, {
           onConflict: 'id'
         });
       

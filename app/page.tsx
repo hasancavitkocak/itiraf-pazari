@@ -29,7 +29,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChevronDown, ChevronUp, Filter, Plus, Sparkles } from 'lucide-react';
+import { ChevronDown, ChevronUp, Filter, Plus, Sparkles, Heart } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface Category {
@@ -81,6 +81,7 @@ interface Comment {
   created_at: string;
   author_id?: string;
   username?: string;
+  likes_count: number;
 }
 
 export default function Home() {
@@ -111,6 +112,8 @@ export default function Home() {
   const [newComment, setNewComment] = useState('');
   const [reportReason, setReportReason] = useState('');
   const [sortBy, setSortBy] = useState<'newest' | 'popular' | 'trending'>('newest');
+  const [trendPeriod, setTrendPeriod] = useState<'24h' | '7d' | '30d'>('24h');
+  const [commentLikes, setCommentLikes] = useState<Record<string, boolean>>({});
 
   const fetchCategories = async () => {
     setCategoriesLoading(true);
@@ -188,6 +191,11 @@ export default function Home() {
 
       // Sıralama parametresi ekle
       params.append('sort', sortBy);
+      
+      // Trend periyodu ekle
+      if (sortBy === 'trending') {
+        params.append('trendPeriod', trendPeriod);
+      }
 
       const response = await fetch(`/api/posts?${params}`);
       const data = await response.json();
@@ -206,7 +214,7 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, selectedCategory, selectedCity, selectedDistrict, searchKeyword, sortBy, postsPerPage]);
+  }, [currentPage, selectedCategory, selectedCity, selectedDistrict, searchKeyword, sortBy, trendPeriod, postsPerPage]);
 
   useEffect(() => {
     fetchCategories();
@@ -215,7 +223,7 @@ export default function Home() {
 
   useEffect(() => {
     setCurrentPage(1); // Reset to first page when filters change
-  }, [selectedCategory, selectedCity, selectedDistrict, searchKeyword, sortBy]);
+  }, [selectedCategory, selectedCity, selectedDistrict, searchKeyword, sortBy, trendPeriod]);
 
   useEffect(() => {
     if (selectedCity) {
@@ -315,7 +323,29 @@ export default function Home() {
     try {
       const response = await fetch(`/api/comments?post_id=${postId}`);
       const data = await response.json();
-      setComments(data.comments || []);
+      const comments = data.comments || [];
+      setComments(comments);
+
+      // Yorum beğenilerini getir
+      if (comments.length > 0) {
+        const commentIds = comments.map((c: Comment) => c.id).join(',');
+        const { data: { session } } = await supabase.auth.getSession();
+        const headers: Record<string, string> = {};
+
+        if (session?.access_token) {
+          headers['Authorization'] = `Bearer ${session.access_token}`;
+        }
+
+        try {
+          const likesResponse = await fetch(`/api/comment-likes?comment_ids=${commentIds}`, {
+            headers
+          });
+          const likesData = await likesResponse.json();
+          setCommentLikes(likesData.likes || {});
+        } catch (error) {
+          console.error('Error fetching comment likes:', error);
+        }
+      }
     } catch (error) {
       console.error('Error fetching comments:', error);
     }
@@ -414,6 +444,71 @@ export default function Home() {
     }
   };
 
+  const handleCommentLike = async (commentId: string) => {
+    try {
+      // Optimistic update
+      setCommentLikes(prev => ({
+        ...prev,
+        [commentId]: !prev[commentId]
+      }));
+
+      setComments(prevComments =>
+        prevComments.map(comment =>
+          comment.id === commentId
+            ? {
+                ...comment,
+                likes_count: commentLikes[commentId] 
+                  ? comment.likes_count - 1 
+                  : comment.likes_count + 1
+              }
+            : comment
+        )
+      );
+
+      // Supabase session token'ı al
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+
+      const response = await fetch('/api/comment-likes', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ commentId })
+      });
+
+      if (!response.ok) {
+        throw new Error('Beğeni işlemi başarısız');
+      }
+
+    } catch (error: any) {
+      // Revert optimistic update on error
+      setCommentLikes(prev => ({
+        ...prev,
+        [commentId]: !prev[commentId]
+      }));
+
+      setComments(prevComments =>
+        prevComments.map(comment =>
+          comment.id === commentId
+            ? {
+                ...comment,
+                likes_count: commentLikes[commentId] 
+                  ? comment.likes_count + 1 
+                  : comment.likes_count - 1
+              }
+            : comment
+        )
+      );
+
+      toast.error(error.message || 'Beğeni işlemi başarısız');
+    }
+  };
+
   const handleDeletePost = async (postId: string) => {
     if (!confirm('Bu itirafı silmek istediğinizden emin misiniz?')) return;
 
@@ -445,6 +540,34 @@ export default function Home() {
   const openReportDialog = (postId: string) => {
     setSelectedPostId(postId);
     setReportDialogOpen(true);
+  };
+
+  const handleShare = async (postId: string) => {
+    const postUrl = `${window.location.origin}/post/${postId}`;
+    
+    try {
+      if (navigator.share) {
+        // Web Share API destekleniyorsa (mobil cihazlarda)
+        await navigator.share({
+          title: 'İtiraf Pazarı - İtiraf',
+          text: 'Bu itirafı kontrol et!',
+          url: postUrl,
+        });
+      } else {
+        // Web Share API desteklenmiyorsa clipboard'a kopyala
+        await navigator.clipboard.writeText(postUrl);
+        toast.success('Link kopyalandı! 📋');
+      }
+    } catch (error) {
+      // Fallback: manuel kopyalama
+      const textArea = document.createElement('textarea');
+      textArea.value = postUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      toast.success('Link kopyalandı! 📋');
+    }
   };
 
   const handleSubmitReport = async () => {
@@ -537,17 +660,21 @@ export default function Home() {
               
 
 
-              {/* Sıralama Butonları - Mobil Optimize */}
+              {/* Trend Filtreleri - Mobil Optimize */}
               <Card className="p-3 sm:p-4">
                 <div className="space-y-3">
                   {/* Mobil: Başlık ve açıklama üstte */}
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <div>
-                      <h3 className="text-base sm:text-lg font-semibold">İtirafları Sırala</h3>
+                      <h3 className="text-base sm:text-lg font-semibold">🔥 Trend İtiraflar</h3>
                       <div className="text-xs sm:text-sm text-muted-foreground">
                         {sortBy === 'newest' && '⏰ En son paylaşılan itiraflar'}
                         {sortBy === 'popular' && '❤️ En çok beğenilen ve yorumlanan itiraflar'}
-                        {sortBy === 'trending' && '🚀 Son 24 saatte popüler olan itiraflar'}
+                        {sortBy === 'trending' && `🚀 ${
+                          trendPeriod === '24h' ? 'Son 24 saatte' : 
+                          trendPeriod === '7d' ? 'Son 7 günde' : 
+                          'Son 30 günde'
+                        } popüler olan itiraflar`}
                       </div>
                     </div>
                   </div>
@@ -582,6 +709,41 @@ export default function Home() {
                       <span className="hidden sm:inline">📈 Trend</span>
                     </Button>
                   </div>
+
+                  {/* Trend Zaman Filtreleri */}
+                  {sortBy === 'trending' && (
+                    <div className="border-t pt-3">
+                      <div className="text-xs sm:text-sm font-medium text-muted-foreground mb-2">
+                        Zaman Aralığı:
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <Button
+                          variant={trendPeriod === '24h' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setTrendPeriod('24h')}
+                          className="text-xs h-8"
+                        >
+                          Son 24 Saat
+                        </Button>
+                        <Button
+                          variant={trendPeriod === '7d' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setTrendPeriod('7d')}
+                          className="text-xs h-8"
+                        >
+                          Son 7 Gün
+                        </Button>
+                        <Button
+                          variant={trendPeriod === '30d' ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setTrendPeriod('30d')}
+                          className="text-xs h-8"
+                        >
+                          Son 1 Ay
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </Card>
 
@@ -769,6 +931,7 @@ export default function Home() {
                   onDislike={(id) => handleReaction(id, 'dislike')}
                   onComment={openCommentDialog}
                   onReport={openReportDialog}
+                  onShare={handleShare}
                   onDelete={handleDeletePost}
                   userReaction={userReactions[post.id]}
                   currentUserId={user?.id}
@@ -876,16 +1039,36 @@ export default function Home() {
                         </div>
                         <p className="text-sm">{comment.content}</p>
                       </div>
-                      {user && comment.author_id === user.id && (
+                      
+                      <div className="flex items-center gap-1">
+                        {/* Beğeni butonu */}
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDeleteComment(comment.id)}
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1 h-6 w-6"
+                          onClick={() => handleCommentLike(comment.id)}
+                          className={`p-1 h-6 gap-1 ${
+                            commentLikes[comment.id] 
+                              ? 'text-red-500 hover:text-red-600' 
+                              : 'text-muted-foreground hover:text-red-500'
+                          }`}
                         >
-                          <Trash2 className="h-3 w-3" />
+                          <Heart 
+                            className={`h-3 w-3 ${commentLikes[comment.id] ? 'fill-current' : ''}`} 
+                          />
+                          <span className="text-xs">{comment.likes_count || 0}</span>
                         </Button>
-                      )}
+                        
+                        {user && comment.author_id === user.id && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteComment(comment.id)}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1 h-6 w-6"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))
