@@ -29,7 +29,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChevronDown, ChevronUp, Filter, Plus, Sparkles, Heart } from 'lucide-react';
+import { ChevronDown, ChevronUp, Filter, Plus, Sparkles, Heart, Share2, ThumbsDown, MessageCircle } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface Category {
@@ -114,6 +114,12 @@ export default function Home() {
   const [sortBy, setSortBy] = useState<'newest' | 'popular' | 'trending'>('newest');
   const [trendPeriod, setTrendPeriod] = useState<'24h' | '7d' | '30d'>('24h');
   const [commentLikes, setCommentLikes] = useState<Record<string, boolean>>({});
+
+
+  // Scroll to top function
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const fetchCategories = async () => {
     setCategoriesLoading(true);
@@ -542,8 +548,10 @@ export default function Home() {
     setReportDialogOpen(true);
   };
 
+
+
   const handleShare = async (postId: string) => {
-    const postUrl = `${window.location.origin}/post/${postId}`;
+    const postUrl = `${window.location.origin}/?post=${postId}`;
     
     try {
       if (navigator.share) {
@@ -935,6 +943,7 @@ export default function Home() {
                   onDelete={handleDeletePost}
                   userReaction={userReactions[post.id]}
                   currentUserId={user?.id}
+                  onClick={() => router.push(`/post/${post.id}`)}
                 />
               ))}
             </div>
@@ -946,7 +955,10 @@ export default function Home() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                onClick={() => {
+                  setCurrentPage(prev => Math.max(1, prev - 1));
+                  scrollToTop();
+                }}
                 disabled={currentPage === 1}
                 className="w-full sm:w-auto"
               >
@@ -961,7 +973,10 @@ export default function Home() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setCurrentPage(currentPage - 1)}
+                      onClick={() => {
+                        setCurrentPage(currentPage - 1);
+                        scrollToTop();
+                      }}
                     >
                       {currentPage - 1}
                     </Button>
@@ -973,7 +988,10 @@ export default function Home() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setCurrentPage(currentPage + 1)}
+                      onClick={() => {
+                        setCurrentPage(currentPage + 1);
+                        scrollToTop();
+                      }}
                     >
                       {currentPage + 1}
                     </Button>
@@ -987,7 +1005,10 @@ export default function Home() {
                       key={page}
                       variant={currentPage === page ? "default" : "outline"}
                       size="sm"
-                      onClick={() => setCurrentPage(page)}
+                      onClick={() => {
+                        setCurrentPage(page);
+                        scrollToTop();
+                      }}
                     >
                       {page}
                     </Button>
@@ -1001,7 +1022,10 @@ export default function Home() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                onClick={() => {
+                  setCurrentPage(prev => Math.min(totalPages, prev + 1));
+                  scrollToTop();
+                }}
                 disabled={currentPage === totalPages}
                 className="w-full sm:w-auto"
               >
@@ -1144,6 +1168,9 @@ export default function Home() {
           </div>
         </DialogContent>
       </Dialog>
+
+
+
 
       <Footer />
     </div>

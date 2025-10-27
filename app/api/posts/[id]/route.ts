@@ -1,88 +1,157 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { getBadWords, filterBadWords } from '@/lib/word-filter';
 
-// Service role key ile RLS bypass
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id: postId } = await params;
+
+    if (!postId) {
+      return NextResponse.json({ error: 'Post ID gerekli' }, { status: 400 });
+    }
+
+    // Post'u getir
+    const { data: post, error } = await supabase
+      .from('posts')
+      .select(`
+        id,
+        title,
+        content,
+        category_id,
+        city_id,
+        district_id,
+        custom_location,
+        created_at,
+        likes_count,
+        dislikes_count,
+        comments_count,
+        is_boosted,
+        author_id,
+        is_hidden,
+        categories(name, slug, icon),
+        cities(name),
+        districts(name)
+      `)
+      .eq('id', postId)
+      .eq('is_hidden', false)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return NextResponse.json({ error: 'İtiraf bulunamadı' }, { status: 404 });
+      }
+      throw error;
+    }
+
+    // Yasaklı kelimeleri al
+    const badWords = await getBadWords();
+
+    // Display username'i al
+    let username = null;
+    if (post.author_id) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('display_username')
+        .eq('id', post.author_id)
+        .single();
+      
+      username = profile?.display_username || null;
+    }
+
+    // Yasaklı kelimeleri filtrele ve username ekle
+    const filteredPost = {
+      ...post,
+      title: post.title ? filterBadWords(post.title, badWords) : post.title,
+      content: filterBadWords(post.content, badWords),
+      custom_location: post.custom_location ? filterBadWords(post.custom_location, badWords) : post.custom_location,
+      username
+    };
+
+    return NextResponse.json({ 
+      success: true, 
+      post: filteredPost 
+    });
+
+  } catch (error: any) {
+    console.error('Get post error:', error);
+    return NextResponse.json({ 
+      error: 'İtiraf getirilemedi' 
+    }, { status: 500 });
+  }
+}
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
-    const postId = id;
+    const { id: postId } = await params;
 
     if (!postId) {
-      return NextResponse.json(
-        { error: 'Post ID gerekli' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Post ID gerekli' }, { status: 400 });
     }
 
-    // Check if post exists
-    const { data: post, error: fetchError } = await supabaseAdmin
-      .from('posts')
-      .select('*')
-      .eq('id', postId)
-      .single();
-
-    if (fetchError || !post) {
-      return NextResponse.json(
-        { error: 'İtiraf bulunamadı' },
-        { status: 404 }
-      );
-    }
-
-    // Sadece üye olan kullanıcılar kendi itiraflarını silebilir
-    if (!post.author_id) {
-      return NextResponse.json(
-        { error: 'Bu itirafı silme yetkiniz yok. Sadece üye kullanıcılar itiraflarını silebilir.' },
-        { status: 403 }
-      );
-    }
-
-    // Get user from Authorization header
+    // Kullanıcı doğrulama
     const authHeader = request.headers.get('authorization');
     if (!authHeader) {
       return NextResponse.json(
-        { error: 'Giriş yapmanız gerekiyor' },
+        { error: 'İtiraf silmek için giriş yapmanız gerekiyor' },
         { status: 401 }
       );
     }
 
-    // Verify user with supabase
     const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
-    if (userError || !user) {
+    if (authError || !user) {
       return NextResponse.json(
         { error: 'Geçersiz oturum' },
         { status: 401 }
       );
     }
 
-    // Check if user owns the post
-    if (post.author_id !== user.id) {
-      return NextResponse.json(
-        { error: 'Bu itirafı silme yetkiniz yok' },
-        { status: 403 }
-      );
+    // Post'un sahibi mi kontrol et
+    const { data: post, error: fetchError } = await supabase
+      .from('posts')
+      .select('author_id')
+      .eq('id', postId)
+      .single();
+
+    if (fetchError) {
+      return NextResponse.json({ error: 'İtiraf bulunamadı' }, { status: 404 });
     }
 
-    // Delete the post
-    const { error: deleteError } = await supabaseAdmin
+    if (post.author_id !== user.id) {
+      return NextResponse.json({ error: 'Bu itirafı silme yetkiniz yok' }, { status: 403 });
+    }
+
+    // İtirafı sil (soft delete)
+    const { error: deleteError } = await supabase
       .from('posts')
-      .delete()
+      .update({ is_hidden: true })
       .eq('id', postId);
 
     if (deleteError) {
       throw deleteError;
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ 
+      success: true, 
+      message: 'İtiraf silindi' 
+    });
+
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('Delete post error:', error);
+    return NextResponse.json({ 
+      error: 'İtiraf silinemedi' 
+    }, { status: 500 });
   }
 }

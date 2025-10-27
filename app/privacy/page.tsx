@@ -20,7 +20,6 @@ export default function PrivacyPage() {
               <ul className="list-disc ml-6 mt-2 space-y-1">
                 <li>İtiraflar anonim olarak paylaşılır</li>
                 <li>IP adresleri güvenlik amaçlı hash&apos;lenerek saklanır</li>
-                <li>Email adresleri sadece hesap yönetimi için kullanılır</li>
                 <li>Çerezler site deneyimini iyileştirmek için kullanılır</li>
               </ul>
             </section>
@@ -71,8 +70,6 @@ export default function PrivacyPage() {
               <ul className="list-disc ml-6 mt-2 space-y-1">
                 <li><strong>Google AdSense:</strong> Reklam gösterimi</li>
                 <li><strong>Google Analytics:</strong> Site analizi</li>
-                <li><strong>Supabase:</strong> Veri saklama</li>
-                <li><strong>Vercel:</strong> Hosting hizmeti</li>
               </ul>
             </section>
 
@@ -80,7 +77,6 @@ export default function PrivacyPage() {
               <h2 className="text-xl font-semibold mb-3">5. Veri Güvenliği</h2>
               <p>Verilerinizin güvenliği için:</p>
               <ul className="list-disc ml-6 mt-2 space-y-1">
-                <li>HTTPS şifreleme kullanılır</li>
                 <li>Düzenli güvenlik güncellemeleri yapılır</li>
                 <li>Erişim kontrolleri uygulanır</li>
                 <li>Veri yedekleme sistemleri mevcuttur</li>

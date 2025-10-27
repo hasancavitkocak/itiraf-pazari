@@ -42,16 +42,9 @@ const faqData: FAQItem[] = [
   {
     id: 'anonim-mi',
     question: 'İtiraflarım gerçekten anonim mi?',
-    answer: 'Evet! İtiraflarınız tamamen anonimdir. Hiçbir kişisel bilginiz (IP adresi hariç güvenlik amaçlı) saklanmaz. İtiraflarınızda isminiz, e-posta adresiniz veya başka tanımlayıcı bilgiler görünmez.',
+    answer: 'Evet! İtiraflarınız tamamen anonimdir. Hiçbir kişisel bilginiz (IP adresi hariç güvenlik amaçlı) saklanmaz. İtiraflarınızda isminiz veya başka tanımlayıcı bilgiler görünmez.',
     category: 'guvenlik',
     icon: <Shield className="h-5 w-5" />
-  },
-  {
-    id: 'guvenli-mi',
-    question: 'Verilerim güvenli mi?',
-    answer: 'Kesinlikle! Tüm verileriniz şifrelenmiş olarak saklanır. HTTPS protokolü kullanıyoruz ve modern güvenlik standartlarına uyuyoruz. Kişisel bilgilerinizi asla üçüncü taraflarla paylaşmayız.',
-    category: 'guvenlik',
-    icon: <Lock className="h-5 w-5" />
   },
   {
     id: 'moderasyon',

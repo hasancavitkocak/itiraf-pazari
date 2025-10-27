@@ -42,7 +42,6 @@ export default function TermsPage() {
               <p>Kullanıcı hesabınız için:</p>
               <ul className="list-disc ml-6 mt-2 space-y-1">
                 <li>Güvenli şifre kullanmakla yükümlüsünüz</li>
-                <li>Hesap bilgilerinizi güncel tutmalısınız</li>
                 <li>Hesabınızın kötüye kullanımından sorumlusunuz</li>
                 <li>Şüpheli aktiviteleri bildirmelisiniz</li>
               </ul>

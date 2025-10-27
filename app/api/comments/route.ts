@@ -35,18 +35,18 @@ export async function GET(request: NextRequest) {
         if (comment.author_id) {
           const { data: profile } = await supabaseAdmin
             .from('profiles')
-            .select('username')
+            .select('display_username')
             .eq('id', comment.author_id)
             .single();
           
           return {
             ...comment,
-            username: profile?.username || 'Anonim'
+            username: profile?.display_username || null
           };
         }
         return {
           ...comment,
-          username: 'Anonim'
+          username: null
         };
       })
     );
@@ -121,14 +121,14 @@ export async function POST(request: NextRequest) {
     // Get username for the new comment
     const { data: profile } = await supabaseAdmin
       .from('profiles')
-      .select('username')
+      .select('display_username')
       .eq('id', user.id)
       .single();
 
     return NextResponse.json({ 
       comment: {
         ...data,
-        username: profile?.username || 'Anonim'
+        username: profile?.display_username || null
       }
     });
   } catch (error: any) {

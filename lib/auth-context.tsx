@@ -89,10 +89,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       password,
     });
 
-    if (error) throw error;
+    if (error) {
+      // Hata mesajını Türkçeleştir
+      if (error.message.includes('Invalid login credentials')) {
+        throw new Error('Kullanıcı adı veya şifre hatalı');
+      } else if (error.message.includes('Email not confirmed')) {
+        throw new Error('E-posta adresiniz doğrulanmamış');
+      } else if (error.message.includes('Too many requests')) {
+        throw new Error('Çok fazla deneme. Lütfen daha sonra tekrar deneyin');
+      } else {
+        throw new Error('Giriş yapılamadı. Lütfen tekrar deneyin');
+      }
+    }
   };
 
   const signUp = async (nickname: string, password: string, birthYear: string, gender: string) => {
+    // Şifre validation
+    if (password.length < 6) {
+      throw new Error('Şifre en az 6 karakter olmalıdır');
+    }
+    if (password.length > 20) {
+      throw new Error('Şifre en fazla 20 karakter olabilir');
+    }
+
     // Nickname benzersizlik kontrolü
     const { data: existingProfile } = await supabase
       .from('profiles')

@@ -42,6 +42,7 @@ interface PostCardProps {
   onDelete?: (postId: string) => void;
   userReaction?: 'like' | 'dislike' | null;
   currentUserId?: string;
+  onClick?: () => void;
 }
 
 export function PostCard({
@@ -54,6 +55,7 @@ export function PostCard({
   onDelete,
   userReaction,
   currentUserId,
+  onClick,
 }: PostCardProps) {
   const [showFullContent, setShowFullContent] = useState(false);
   const maxLength = 280;
@@ -67,7 +69,10 @@ export function PostCard({
       whileHover={{ scale: 1.01 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className={`p-4 sm:p-6 card-hover ${post.is_boosted ? 'ring-2 ring-secondary' : ''}`}>
+      <Card 
+        className={`p-4 sm:p-6 card-hover cursor-pointer ${post.is_boosted ? 'ring-2 ring-secondary' : ''}`}
+        onClick={onClick}
+      >
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
             <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
@@ -148,7 +153,10 @@ export function PostCard({
               <Button
                 variant={userReaction === 'like' ? 'default' : 'ghost'}
                 size="sm"
-                onClick={() => onLike(post.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onLike(post.id);
+                }}
                 className={`gap-1 sm:gap-1.5 transition-all text-xs sm:text-sm h-8 sm:h-9 ${
                   userReaction === 'like' 
                     ? 'bg-red-500 hover:bg-red-600 text-white' 
@@ -162,7 +170,10 @@ export function PostCard({
               <Button
                 variant={userReaction === 'dislike' ? 'default' : 'ghost'}
                 size="sm"
-                onClick={() => onDislike(post.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDislike(post.id);
+                }}
                 className={`gap-1 sm:gap-1.5 transition-all text-xs sm:text-sm h-8 sm:h-9 ${
                   userReaction === 'dislike' 
                     ? 'bg-gray-500 hover:bg-gray-600 text-white' 
@@ -176,7 +187,10 @@ export function PostCard({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onComment(post.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onComment(post.id);
+                }}
                 className="gap-1 sm:gap-1.5 hover:bg-blue-50 hover:text-blue-500 transition-all text-xs sm:text-sm h-8 sm:h-9"
               >
                 <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -189,7 +203,10 @@ export function PostCard({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => onDelete(post.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(post.id);
+                  }}
                   className="text-red-500 hover:text-red-700 hover:bg-red-50 h-8 sm:h-9"
                 >
                   <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -198,7 +215,10 @@ export function PostCard({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onShare(post.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onShare(post.id);
+                }}
                 className="h-8 sm:h-9 hover:bg-green-50 hover:text-green-500"
                 title="Paylaş"
               >
@@ -207,7 +227,10 @@ export function PostCard({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onReport(post.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onReport(post.id);
+                }}
                 className="h-8 sm:h-9"
               >
                 <Flag className="h-3 w-3 sm:h-4 sm:w-4" />

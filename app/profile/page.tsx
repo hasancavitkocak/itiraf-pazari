@@ -112,6 +112,11 @@ export default function ProfilePage() {
       return;
     }
 
+    if (newPassword.length > 20) {
+      toast.error('Yeni şifre en fazla 20 karakter olabilir');
+      return;
+    }
+
     setLoading(true);
     try {
       // Supabase session token'ı al
@@ -334,6 +339,7 @@ export default function ProfilePage() {
                           value={currentPassword}
                           onChange={(e) => setCurrentPassword(e.target.value)}
                           placeholder="••••••••"
+                          maxLength={20}
                         />
                       </div>
 
@@ -346,6 +352,7 @@ export default function ProfilePage() {
                           onChange={(e) => setNewPassword(e.target.value)}
                           placeholder="••••••••"
                           minLength={6}
+                          maxLength={20}
                         />
                       </div>
 
@@ -358,6 +365,7 @@ export default function ProfilePage() {
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           placeholder="••••••••"
                           minLength={6}
+                          maxLength={20}
                         />
                       </div>
                     </div>

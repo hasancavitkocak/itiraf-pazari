@@ -171,6 +171,7 @@ export default function AuthPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    maxLength={20}
                   />
                 </div>
 
@@ -217,9 +218,10 @@ export default function AuthPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     minLength={6}
+                    maxLength={20}
                   />
                   <p className="text-xs text-muted-foreground">
-                    En az 6 karakter olmalıdır
+                    6-20 karakter arası olmalıdır
                   </p>
                 </div>
 
