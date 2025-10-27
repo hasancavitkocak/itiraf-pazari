@@ -58,7 +58,7 @@ export function Header() {
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex items-center mt-5"
+              className="flex items-center"
             >
               <Image
                 src={siteLogo}
