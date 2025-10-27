@@ -23,17 +23,17 @@ export function Header() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Site ayarlarını yükle
+    // Site ayarlarını yükle (public endpoint)
     const fetchSiteSettings = async () => {
       try {
-        const response = await fetch('/api/admin/settings');
+        const response = await fetch('/api/site-settings');
         if (response.ok) {
           const settings = await response.json();
-          if (settings.site_logo?.value) {
-            setSiteLogo(settings.site_logo.value);
+          if (settings.site_logo) {
+            setSiteLogo(settings.site_logo);
           }
-          if (settings.site_name?.value) {
-            setSiteName(settings.site_name.value);
+          if (settings.site_name) {
+            setSiteName(settings.site_name);
           }
         }
       } catch (error) {

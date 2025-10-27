@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "load-test": "node scripts/load-test.js",
+    "load-test:artillery": "npx artillery run load-test-config.yml",
+    "load-test:quick": "npx artillery quick --count 50 --num 10"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

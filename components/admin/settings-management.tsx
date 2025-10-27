@@ -25,13 +25,18 @@ export default function SettingsManagement() {
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch('/api/admin/settings');
+      const { adminFetch } = await import('@/lib/api-client');
+      const response = await adminFetch('/api/admin/settings');
       if (response.ok) {
         const data = await response.json();
         setSettings(data);
+      } else {
+        const error = await response.json();
+        setMessage(error.error || 'Ayarlar yüklenirken hata oluştu.');
       }
     } catch (error) {
       console.error('Ayarlar yüklenirken hata:', error);
+      setMessage('Ayarlar yüklenirken hata oluştu.');
     } finally {
       setLoading(false);
     }
@@ -52,19 +57,32 @@ export default function SettingsManagement() {
     setMessage('');
 
     try {
-      const response = await fetch('/api/admin/settings', {
+      const { adminFetch } = await import('@/lib/api-client');
+      const response = await adminFetch('/api/admin/settings', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({ settings }),
       });
 
       if (response.ok) {
         setMessage('Ayarlar başarıyla güncellendi!');
+        
+        // Header için cache'i güncelle
+        if (settings.site_logo?.value) {
+          localStorage.setItem('site_logo', settings.site_logo.value);
+        }
+        if (settings.site_name?.value) {
+          localStorage.setItem('site_name', settings.site_name.value);
+        }
+        
+        // Sayfayı yenile ki header güncellensin
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+        
         setTimeout(() => setMessage(''), 3000);
       } else {
-        setMessage('Ayarlar güncellenirken hata oluştu.');
+        const error = await response.json();
+        setMessage(error.error || 'Ayarlar güncellenirken hata oluştu.');
       }
     } catch (error) {
       console.error('Ayarlar kaydedilirken hata:', error);
@@ -85,10 +103,8 @@ export default function SettingsManagement() {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('/api/upload/logo', {
-        method: 'POST',
-        body: formData,
-      });
+      const { authenticatedFormFetch } = await import('@/lib/api-client');
+      const response = await authenticatedFormFetch('/api/upload/logo', formData);
 
       const result = await response.json();
 

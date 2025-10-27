@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { verifyAdmin, rateLimit, sanitizeInput } from '@/lib/auth-middleware';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -7,7 +8,20 @@ const supabase = createClient(
 );
 
 // Site ayarlarını getir
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Rate limiting
+  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+  const rateLimitResult = rateLimit(ip, 50, 15 * 60 * 1000); // 50 istek/15dk
+  
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json({ error: 'Çok fazla istek' }, { status: 429 });
+  }
+
+  // Admin yetkisi kontrolü
+  const authResult = await verifyAdmin(request);
+  if ('error' in authResult) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+  }
   try {
     const { data: settings, error } = await supabase
       .from('site_settings')
@@ -36,8 +50,23 @@ export async function GET() {
 
 // Site ayarlarını güncelle
 export async function POST(request: NextRequest) {
+  // Rate limiting
+  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+  const rateLimitResult = rateLimit(ip, 20, 15 * 60 * 1000); // 20 istek/15dk
+  
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json({ error: 'Çok fazla istek' }, { status: 429 });
+  }
+
+  // Admin yetkisi kontrolü
+  const authResult = await verifyAdmin(request);
+  if ('error' in authResult) {
+    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+  }
+
   try {
-    const { settings } = await request.json();
+    const body = await request.json();
+    const { settings } = sanitizeInput(body);
 
     // Her ayarı tek tek güncelle
     for (const [key, data] of Object.entries(settings)) {

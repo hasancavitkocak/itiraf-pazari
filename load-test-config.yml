@@ -1,0 +1,106 @@
+# Artillery.js yük testi konfigürasyonu
+config:
+  target: 'https://www.itirafpazari.com'  # İtiraf Pazarı canlı site URL'i
+  phases:
+    # Isınma fazı - 30 saniye boyunca 1-5 kullanıcı
+    - duration: 30
+      arrivalRate: 1
+      rampTo: 5
+      name: "Warm up"
+    
+    # Normal yük - 60 saniye boyunca 5-20 kullanıcı
+    - duration: 60
+      arrivalRate: 5
+      rampTo: 20
+      name: "Normal load"
+    
+    # Yoğun yük - 60 saniye boyunca 20-50 kullanıcı
+    - duration: 60
+      arrivalRate: 20
+      rampTo: 50
+      name: "Heavy load"
+    
+    # Pik yük - 30 saniye boyunca 50-100 kullanıcı
+    - duration: 30
+      arrivalRate: 50
+      rampTo: 100
+      name: "Peak load"
+    
+    # Soğuma fazı - 30 saniye boyunca 100-10 kullanıcı
+    - duration: 30
+      arrivalRate: 100
+      rampTo: 10
+      name: "Cool down"
+
+  defaults:
+    headers:
+      User-Agent: "Artillery Load Test"
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+      Accept-Language: "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3"
+      Accept-Encoding: "gzip, deflate"
+      Connection: "keep-alive"
+
+scenarios:
+  # Ana sayfa testi
+  - name: "Homepage Flow"
+    weight: 40
+    flow:
+      - get:
+          url: "/"
+          capture:
+            - json: "$.title"
+              as: "pageTitle"
+      - think: 2
+      - get:
+          url: "/api/posts"
+      - think: 1
+      - get:
+          url: "/api/categories"
+
+  # Gönderi okuma akışı
+  - name: "Post Reading Flow"
+    weight: 30
+    flow:
+      - get:
+          url: "/"
+      - think: 3
+      - get:
+          url: "/api/posts"
+          capture:
+            - json: "$[0].id"
+              as: "postId"
+      - think: 2
+      - get:
+          url: "/api/posts/{{ postId }}"
+      - think: 5
+      - get:
+          url: "/api/comments"
+
+  # Kategori gezinme akışı
+  - name: "Category Browsing Flow"
+    weight: 20
+    flow:
+      - get:
+          url: "/"
+      - think: 2
+      - get:
+          url: "/api/categories"
+      - think: 3
+      - get:
+          url: "/api/posts"
+
+  # Statik sayfa testi
+  - name: "Static Pages Flow"
+    weight: 10
+    flow:
+      - get:
+          url: "/contact"
+      - think: 2
+      - get:
+          url: "/privacy"
+      - think: 2
+      - get:
+          url: "/terms"
+      - think: 2
+      - get:
+          url: "/sss"
