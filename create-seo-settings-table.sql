@@ -16,8 +16,8 @@ Disallow: /admin/
 Disallow: /api/
 Disallow: /auth
 Disallow: /profile
-Sitemap: https://itirafpazari.com/sitemap.xml',
-  canonical_url VARCHAR(255) DEFAULT 'https://itirafpazari.com',
+Sitemap: https://www.itirafsayfasi.com/sitemap.xml',
+  canonical_url VARCHAR(255) DEFAULT 'https://www.itirafsayfasi.com',
   schema_org_type VARCHAR(50) DEFAULT 'WebSite',
   enable_breadcrumbs BOOLEAN DEFAULT true,
   enable_structured_data BOOLEAN DEFAULT true,

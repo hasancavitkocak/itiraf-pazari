@@ -25,7 +25,7 @@ export function generateSEO({
   author,
   category
 }: SEOProps): Metadata {
-  const baseUrl = 'https://itirafpazari.com'
+  const baseUrl = 'https://www.itirafsayfasi.com'
   const fullUrl = url ? `${baseUrl}${url}` : baseUrl
   const fullTitle = title ? `${title} | İtiraf Pazarı` : 'İtiraf Pazarı - Anonim İtiraf Paylaşım Platformu'
   const defaultDescription = 'Türkiye\'nin en güvenli anonim itiraf platformu. Kayıt gerektirmez, tamamen ücretsiz.'
@@ -140,7 +140,7 @@ export function generateArticleStructuredData({
   category?: string
   image?: string
 }) {
-  const baseUrl = 'https://itirafpazari.com'
+  const baseUrl = 'https://www.itirafsayfasi.com'
   
   return {
     '@context': 'https://schema.org',
@@ -180,7 +180,7 @@ export function generateArticleStructuredData({
 
 // Breadcrumb structured data
 export function generateBreadcrumbStructuredData(items: Array<{ name: string; url: string }>) {
-  const baseUrl = 'https://itirafpazari.com'
+  const baseUrl = 'https://www.itirafsayfasi.com'
   
   return {
     '@context': 'https://schema.org',
