@@ -68,8 +68,8 @@ export async function GET(request: NextRequest) {
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
-    const cityId = searchParams.get('city');
-    const districtId = searchParams.get('district');
+    const cityName = searchParams.get('city'); // Şehir adı kullanıyoruz
+    const districtName = searchParams.get('district'); // İlçe adı kullanıyoruz
     const search = searchParams.get('search');
     const sort = searchParams.get('sort') || 'newest';
     const page = parseInt(searchParams.get('page') || '1');
@@ -119,16 +119,69 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Şehir filtresi
-    if (cityId) {
-      query = query.eq('city_id', parseInt(cityId));
-      countQuery = countQuery.eq('city_id', parseInt(cityId));
+    // Şehir filtresi - şehir slug'ına göre
+    if (cityName && cityName !== 'all') {
+      // Tüm şehirleri çek ve slug ile eşleştir
+      const { data: allCities } = await supabase
+        .from('cities')
+        .select('id, name');
+      
+      // Slug'a göre şehri bul (Türkçe karakterler için özel dönüşüm)
+      const cityData = allCities?.find(city => {
+        const citySlug = city.name
+          .replace(/İ/g, 'i')
+          .replace(/I/g, 'i')
+          .replace(/ı/g, 'i')
+          .replace(/Ğ/g, 'g')
+          .replace(/ğ/g, 'g')
+          .replace(/Ü/g, 'u')
+          .replace(/ü/g, 'u')
+          .replace(/Ş/g, 's')
+          .replace(/ş/g, 's')
+          .replace(/Ö/g, 'o')
+          .replace(/ö/g, 'o')
+          .replace(/Ç/g, 'c')
+          .replace(/ç/g, 'c')
+          .toLowerCase();
+        return citySlug === cityName;
+      });
+
+      if (cityData) {
+        query = query.eq('city_id', cityData.id);
+        countQuery = countQuery.eq('city_id', cityData.id);
+      }
     }
 
-    // İlçe filtresi
-    if (districtId) {
-      query = query.eq('district_id', parseInt(districtId));
-      countQuery = countQuery.eq('district_id', parseInt(districtId));
+    // İlçe filtresi - ilçe slug'ına göre
+    if (districtName && districtName !== 'all') {
+      // Tüm ilçeleri çek ve slug ile eşleştir
+      const { data: allDistricts } = await supabase
+        .from('districts')
+        .select('id, name');
+      
+      const districtData = allDistricts?.find(district => {
+        const districtSlug = district.name
+          .replace(/İ/g, 'i')
+          .replace(/I/g, 'i')
+          .replace(/ı/g, 'i')
+          .replace(/Ğ/g, 'g')
+          .replace(/ğ/g, 'g')
+          .replace(/Ü/g, 'u')
+          .replace(/ü/g, 'u')
+          .replace(/Ş/g, 's')
+          .replace(/ş/g, 's')
+          .replace(/Ö/g, 'o')
+          .replace(/ö/g, 'o')
+          .replace(/Ç/g, 'c')
+          .replace(/ç/g, 'c')
+          .toLowerCase();
+        return districtSlug === districtName;
+      });
+
+      if (districtData) {
+        query = query.eq('district_id', districtData.id);
+        countQuery = countQuery.eq('district_id', districtData.id);
+      }
     }
 
     // Arama filtresi
@@ -143,20 +196,20 @@ export async function GET(request: NextRequest) {
         // Popülerlik = (likes * 2 + comments * 3) - (dislikes * 1)
         // En popüler olanlar önce
         query = query.order('likes_count', { ascending: false })
-                    .order('comments_count', { ascending: false })
-                    .order('created_at', { ascending: false });
+          .order('comments_count', { ascending: false })
+          .order('created_at', { ascending: false });
         break;
-      
+
       case 'trending':
         // Trend = Son 24 saatte oluşturulan ve popüler olanlar
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         query = query.gte('created_at', yesterday.toISOString())
-                    .order('likes_count', { ascending: false })
-                    .order('comments_count', { ascending: false })
-                    .order('created_at', { ascending: false });
+          .order('likes_count', { ascending: false })
+          .order('comments_count', { ascending: false })
+          .order('created_at', { ascending: false });
         break;
-      
+
       case 'newest':
       default:
         // En yeni olanlar önce (varsayılan)
@@ -180,7 +233,7 @@ export async function GET(request: NextRequest) {
     const postsWithUsernames = await Promise.all(
       (posts || []).map(async (post) => {
         let username = 'anonymous'; // Varsayılan olarak anonymous
-        
+
         if (post.author_id) {
           const { data: profile } = await supabase
             .from('profiles')
@@ -201,8 +254,8 @@ export async function GET(request: NextRequest) {
       })
     );
 
-    const response = NextResponse.json({ 
-      success: true, 
+    const response = NextResponse.json({
+      success: true,
       posts: postsWithUsernames,
       total: count || 0,
       page,

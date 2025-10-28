@@ -95,5 +95,5 @@ export default async function CityConfessionPageRoute({ params }: Props) {
 
   // Varsayılan olarak ana sayfaya şehir filtresi ile yönlendir
   const { redirect } = await import('next/navigation');
-  redirect(`/?city=${city.id}`);
+  redirect(`/?city=${citySlug}&district=all`);
 }

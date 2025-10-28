@@ -155,15 +155,15 @@ function HomeContent() {
     }
   };
 
-  const fetchDistricts = async (cityId: string) => {
-    if (!cityId || cityId === 'all') {
+  const fetchDistricts = async (citySlug: string) => {
+    if (!citySlug || citySlug === 'all') {
       setDistricts([]);
       return;
     }
     
     setDistrictsLoading(true);
     try {
-      const response = await fetch(`/api/districts?city_id=${cityId}`);
+      const response = await fetch(`/api/districts?city_slug=${citySlug}`);
       const data = await response.json();
       setDistricts(data.districts || []);
     } catch (error) {
@@ -230,9 +230,30 @@ function HomeContent() {
   }, []);
 
   // Şehir ID'sini bul (name'e göre)
-  const getCityIdByName = (cityName: string) => {
-    const city = cities.find(c => c.name === cityName);
-    return city ? city.id.toString() : '34'; // Fallback olarak İstanbul plaka kodu
+  const getSlugByName = (name: string) => {
+    // İsmi slug formatına çevir (Türkçe karakterler için)
+    return name
+      .replace(/İ/g, 'i')
+      .replace(/I/g, 'i')
+      .replace(/ı/g, 'i')
+      .replace(/Ğ/g, 'g')
+      .replace(/ğ/g, 'g')
+      .replace(/Ü/g, 'u')
+      .replace(/ü/g, 'u')
+      .replace(/Ş/g, 's')
+      .replace(/ş/g, 's')
+      .replace(/Ö/g, 'o')
+      .replace(/ö/g, 'o')
+      .replace(/Ç/g, 'c')
+      .replace(/ç/g, 'c')
+      .toLowerCase();
+  };
+
+  const getCitySlugByName = getSlugByName; // Geriye uyumluluk için
+
+  const handleCityClick = (cityName: string) => {
+    const slug = getCitySlugByName(cityName);
+    window.location.href = `/?city=${slug}&district=all`;
   };
 
   // URL parametrelerinden filtreleri oku (sadece ilk yüklemede)
@@ -240,6 +261,7 @@ function HomeContent() {
     if (isInitialized) return; // Zaten initialize edilmişse çık
     
     const cityParam = searchParams.get('city');
+    const districtParam = searchParams.get('district');
     const categoryParam = searchParams.get('category');
     const searchParam = searchParams.get('search');
     const sortParam = searchParams.get('sort');
@@ -248,6 +270,11 @@ function HomeContent() {
     // Şehir parametresi
     if (cityParam) {
       setSelectedCity(cityParam);
+    }
+    
+    // İlçe parametresi
+    if (districtParam) {
+      setSelectedDistrict(districtParam);
     }
     
     // Kategori parametresi
@@ -897,7 +924,7 @@ function HomeContent() {
                             <SelectContent>
                               <SelectItem value="all">Tüm İller</SelectItem>
                               {cities.map((city) => (
-                                <SelectItem key={city.id} value={city.id.toString()}>
+                                <SelectItem key={city.id} value={getCitySlugByName(city.name)}>
                                   {city.name}
                                 </SelectItem>
                               ))}
@@ -925,7 +952,7 @@ function HomeContent() {
                             <SelectContent>
                               <SelectItem value="all">Tüm İlçeler</SelectItem>
                               {districts.map((district) => (
-                                <SelectItem key={district.id} value={district.id.toString()}>
+                                <SelectItem key={district.id} value={getSlugByName(district.name)}>
                                   {district.name}
                                 </SelectItem>
                               ))}
@@ -1259,93 +1286,93 @@ function HomeContent() {
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            <Link 
-              href={`/?city=${getCityIdByName('İstanbul')}`}
-              className="group p-4 bg-background rounded-lg border hover:border-primary/50 transition-all hover:shadow-md"
+            <button 
+              onClick={() => handleCityClick('İstanbul')}
+              className="group p-4 bg-background rounded-lg border hover:border-primary/50 transition-all hover:shadow-md cursor-pointer"
             >
               <div className="text-center">
                 <div className="text-2xl mb-2">🏙️</div>
                 <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">İstanbul</h3>
                 <p className="text-xs text-muted-foreground">İtirafları Gör</p>
               </div>
-            </Link>
+            </button>
             
-            <Link 
-              href={`/?city=${getCityIdByName('Ankara')}`}
-              className="group p-4 bg-background rounded-lg border hover:border-primary/50 transition-all hover:shadow-md"
+            <button 
+              onClick={() => handleCityClick('Ankara')}
+              className="group p-4 bg-background rounded-lg border hover:border-primary/50 transition-all hover:shadow-md cursor-pointer"
             >
               <div className="text-center">
                 <div className="text-2xl mb-2">🏛️</div>
                 <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">Ankara</h3>
                 <p className="text-xs text-muted-foreground">İtirafları Gör</p>
               </div>
-            </Link>
+            </button>
             
-            <Link 
-              href={`/?city=${getCityIdByName('İzmir')}`}
-              className="group p-4 bg-background rounded-lg border hover:border-primary/50 transition-all hover:shadow-md"
+            <button 
+              onClick={() => handleCityClick('İzmir')}
+              className="group p-4 bg-background rounded-lg border hover:border-primary/50 transition-all hover:shadow-md cursor-pointer"
             >
               <div className="text-center">
                 <div className="text-2xl mb-2">🌊</div>
                 <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">İzmir</h3>
                 <p className="text-xs text-muted-foreground">İtirafları Gör</p>
               </div>
-            </Link>
+            </button>
             
-            <Link 
-              href={`/?city=${getCityIdByName('Bursa')}`}
-              className="group p-4 bg-background rounded-lg border hover:border-primary/50 transition-all hover:shadow-md"
+            <button 
+              onClick={() => handleCityClick('Bursa')}
+              className="group p-4 bg-background rounded-lg border hover:border-primary/50 transition-all hover:shadow-md cursor-pointer"
             >
               <div className="text-center">
                 <div className="text-2xl mb-2">🏔️</div>
                 <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">Bursa</h3>
                 <p className="text-xs text-muted-foreground">İtirafları Gör</p>
               </div>
-            </Link>
+            </button>
             
-            <Link 
-              href={`/?city=${getCityIdByName('Antalya')}`}
-              className="group p-4 bg-background rounded-lg border hover:border-primary/50 transition-all hover:shadow-md"
+            <button 
+              onClick={() => handleCityClick('Antalya')}
+              className="group p-4 bg-background rounded-lg border hover:border-primary/50 transition-all hover:shadow-md cursor-pointer"
             >
               <div className="text-center">
                 <div className="text-2xl mb-2">🏖️</div>
                 <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">Antalya</h3>
                 <p className="text-xs text-muted-foreground">İtirafları Gör</p>
               </div>
-            </Link>
+            </button>
             
-            <Link 
-              href={`/?city=${getCityIdByName('Adana')}`}
-              className="group p-4 bg-background rounded-lg border hover:border-primary/50 transition-all hover:shadow-md"
+            <button 
+              onClick={() => handleCityClick('Adana')}
+              className="group p-4 bg-background rounded-lg border hover:border-primary/50 transition-all hover:shadow-md cursor-pointer"
             >
               <div className="text-center">
                 <div className="text-2xl mb-2">🌶️</div>
                 <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">Adana</h3>
                 <p className="text-xs text-muted-foreground">İtirafları Gör</p>
               </div>
-            </Link>
+            </button>
             
-            <Link 
-              href={`/?city=${getCityIdByName('Konya')}`}
-              className="group p-4 bg-background rounded-lg border hover:border-primary/50 transition-all hover:shadow-md"
+            <button 
+              onClick={() => handleCityClick('Konya')}
+              className="group p-4 bg-background rounded-lg border hover:border-primary/50 transition-all hover:shadow-md cursor-pointer"
             >
               <div className="text-center">
                 <div className="text-2xl mb-2">🕌</div>
                 <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">Konya</h3>
                 <p className="text-xs text-muted-foreground">İtirafları Gör</p>
               </div>
-            </Link>
+            </button>
             
-            <Link 
-              href={`/?city=${getCityIdByName('Gaziantep')}`}
-              className="group p-4 bg-background rounded-lg border hover:border-primary/50 transition-all hover:shadow-md"
+            <button 
+              onClick={() => handleCityClick('Gaziantep')}
+              className="group p-4 bg-background rounded-lg border hover:border-primary/50 transition-all hover:shadow-md cursor-pointer"
             >
               <div className="text-center">
                 <div className="text-2xl mb-2">🥙</div>
                 <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">Gaziantep</h3>
                 <p className="text-xs text-muted-foreground">İtirafları Gör</p>
               </div>
-            </Link>
+            </button>
           </div>
           
           <div className="text-center mt-6">
