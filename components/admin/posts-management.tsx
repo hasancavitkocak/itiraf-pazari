@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Eye, EyeOff, Trash2, Flag, Edit, MapPin, Calendar, Heart, MessageCircle, ThumbsDown } from 'lucide-react';
+import { Eye, EyeOff, Trash2, Flag, Edit, MapPin, Calendar, Heart, MessageCircle, ThumbsDown, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -48,6 +48,16 @@ interface Post {
   };
 }
 
+interface Comment {
+  id: string;
+  content: string;
+  created_at: string;
+  author_id?: string;
+  username?: string;
+  likes_count: number;
+  is_hidden: boolean;
+}
+
 export function PostsManagement() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -67,6 +77,12 @@ export function PostsManagement() {
 
   const [fixingPosts, setFixingPosts] = useState(false);
   const [fixingCommentCounts, setFixingCommentCounts] = useState(false);
+  
+  // Yorum yönetimi state'leri
+  const [commentsDialogOpen, setCommentsDialogOpen] = useState(false);
+  const [selectedPostComments, setSelectedPostComments] = useState<Comment[]>([]);
+  const [selectedPostId, setSelectedPostId] = useState<string>('');
+  const [loadingComments, setLoadingComments] = useState(false);
 
   useEffect(() => {
     fetchPosts();
@@ -220,6 +236,67 @@ export function PostsManagement() {
     }
   };
 
+  // Yorum yönetim fonksiyonları
+  const fetchComments = async (postId: string) => {
+    setLoadingComments(true);
+    try {
+      const response = await fetch(`/api/admin/comments?post_id=${postId}`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        setSelectedPostComments(data.comments || []);
+        setSelectedPostId(postId);
+        setCommentsDialogOpen(true);
+      } else {
+        throw new Error(data.error || 'Yorumlar yüklenemedi');
+      }
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setLoadingComments(false);
+    }
+  };
+
+  const toggleCommentVisibility = async (commentId: string, currentStatus: boolean) => {
+    try {
+      const response = await fetch('/api/admin/comments/toggle-visibility', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comment_id: commentId, is_hidden: !currentStatus }),
+      });
+
+      if (!response.ok) throw new Error();
+
+      toast.success('Yorum durumu güncellendi');
+      // Yorumları yenile
+      fetchComments(selectedPostId);
+    } catch (error) {
+      toast.error('İşlem başarısız');
+    }
+  };
+
+  const deleteComment = async (commentId: string) => {
+    if (!confirm('Bu yorumu silmek istediğinizden emin misiniz?')) return;
+
+    try {
+      const response = await fetch('/api/admin/comments/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comment_id: commentId }),
+      });
+
+      if (!response.ok) throw new Error();
+
+      toast.success('Yorum silindi');
+      // Yorumları yenile
+      fetchComments(selectedPostId);
+      // Gönderi listesini de yenile (yorum sayısı güncellensin)
+      fetchPosts();
+    } catch (error) {
+      toast.error('İşlem başarısız');
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-8">Yükleniyor...</div>;
   }
@@ -319,10 +396,14 @@ export function PostsManagement() {
                     <ThumbsDown className="h-4 w-4" />
                     <span>{post.dislikes_count || 0} beğenmeme</span>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => fetchComments(post.id)}
+                    className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
+                    disabled={loadingComments}
+                  >
                     <MessageCircle className="h-4 w-4" />
                     <span>{post.comments_count} yorum</span>
-                  </div>
+                  </button>
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
                     <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true, locale: tr })}</span>
@@ -444,6 +525,106 @@ export function PostsManagement() {
           </Card>
         )}
       </div>
+
+      {/* Yorumlar Dialog */}
+      <Dialog open={commentsDialogOpen} onOpenChange={setCommentsDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageCircle className="h-5 w-5" />
+              Gönderi Yorumları ({selectedPostComments.length})
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            {loadingComments ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                <p>Yorumlar yükleniyor...</p>
+              </div>
+            ) : selectedPostComments.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Bu gönderide henüz yorum yok.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {selectedPostComments.map((comment) => (
+                  <Card key={comment.id} className={comment.is_hidden ? 'opacity-50 border-red-200' : ''}>
+                    <CardContent className="p-4">
+                      <div className="space-y-3">
+                        {/* Yorum Başlığı */}
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-medium text-sm">
+                              {comment.username || 'Anonymous'}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {formatDistanceToNow(new Date(comment.created_at), { 
+                                addSuffix: true, 
+                                locale: tr 
+                              })}
+                            </span>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            {comment.is_hidden ? (
+                              <Badge variant="destructive">Gizli</Badge>
+                            ) : (
+                              <Badge variant="default">Görünür</Badge>
+                            )}
+                            <Badge variant="outline" className="gap-1">
+                              <Heart className="h-3 w-3" />
+                              {comment.likes_count}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        {/* Yorum İçeriği */}
+                        <div className="bg-muted/50 rounded-lg p-3">
+                          <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
+                        </div>
+
+                        {/* Yorum İşlem Butonları */}
+                        <div className="flex gap-2 pt-2 border-t">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => toggleCommentVisibility(comment.id, comment.is_hidden)}
+                            className="gap-1"
+                          >
+                            {comment.is_hidden ? (
+                              <>
+                                <Eye className="h-3 w-3" />
+                                Göster
+                              </>
+                            ) : (
+                              <>
+                                <EyeOff className="h-3 w-3" />
+                                Gizle
+                              </>
+                            )}
+                          </Button>
+
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => deleteComment(comment.id)}
+                            className="gap-1"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                            Sil
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Pagination */}
       {totalPages > 1 && (

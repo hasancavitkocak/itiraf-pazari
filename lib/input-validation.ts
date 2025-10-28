@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 // Genel güvenlik şemaları
-const createSecureStringSchema = (maxLength: number = 1000) => z.string()
+const createSecureStringSchema = (maxLength: number = 2000) => z.string()
   .min(1)
   .max(maxLength)
   .refine((val) => {

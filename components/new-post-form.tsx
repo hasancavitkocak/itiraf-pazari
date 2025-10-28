@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Loader as Loader2, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth-context';
@@ -36,7 +36,7 @@ interface NewPostFormProps {
 }
 
 export function NewPostForm({ categories, categoriesLoading, onPostCreated }: NewPostFormProps) {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [categoryId, setCategoryId] = useState('');
@@ -56,7 +56,24 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
       try {
         const response = await fetch('/api/cities');
         const data = await response.json();
-        setCities(data.cities || []);
+        const allCities = data.cities || [];
+        
+        // İstanbul, Ankara, İzmir'i en üste koy
+        const priorityCities = ['İstanbul', 'Ankara', 'İzmir'];
+        const sortedCities = allCities.sort((a: City, b: City) => {
+          const aIndex = priorityCities.indexOf(a.name);
+          const bIndex = priorityCities.indexOf(b.name);
+          
+          if (aIndex !== -1 && bIndex !== -1) {
+            return aIndex - bIndex; // Her ikisi de öncelikli şehirse sırasına göre
+          }
+          if (aIndex !== -1) return -1; // a öncelikli şehirse üstte
+          if (bIndex !== -1) return 1;  // b öncelikli şehirse üstte
+          
+          return a.name.localeCompare(b.name, 'tr'); // Diğerleri alfabetik
+        });
+        
+        setCities(sortedCities);
       } catch (error) {
         console.error('Error fetching cities:', error);
       } finally {
@@ -166,171 +183,167 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
   };
 
   return (
-    <Card className="border-2 border-primary/20 shadow-lg">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-bold text-center text-primary">
-          ✍️ Yeni İtiraf Paylaş
-        </CardTitle>
-        <p className="text-sm text-muted-foreground text-center">
-          Anonim olarak itirafınızı paylaşın
-        </p>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="title">Başlık</Label>
+    <div className="space-y-6">
+
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Ana İçerik */}
+        <div className="space-y-4">
+          <div>
             <Input
-              id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="İtirafınızın başlığını yazın..."
+              placeholder="Başlık yazın..."
               maxLength={100}
               disabled={loading}
               autoFocus={false}
               autoComplete="off"
-              className="text-base" // iOS'ta zoom'u engellemek için
+              className="text-base h-12 text-lg"
             />
-            <div className="text-xs text-muted-foreground text-right">
+            <div className="text-xs text-muted-foreground text-right mt-1">
               {title.length}/100
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="content">İtiraf</Label>
+          <div>
             <Textarea
-              id="content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="İtirafınızı buraya yazın..."
-              rows={4}
-              maxLength={1000}
+              placeholder="İtirafınızı buraya yazın... Ne olursa olsun, burada güvendesiniz."
+              rows={6}
+              maxLength={2000}
               disabled={loading}
               autoFocus={false}
               autoComplete="off"
-              className="text-base resize-none" // iOS'ta zoom'u engellemek için
+              className="text-base resize-none text-lg"
             />
-            <div className="text-xs text-muted-foreground text-right">
-              {content.length}/1000
+            <div className="text-xs text-muted-foreground text-right mt-1">
+              {content.length}/2000
             </div>
           </div>
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="category">Kategori</Label>
-            {categoriesLoading ? (
-              <div className="flex items-center gap-2 p-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="text-sm text-muted-foreground">Kategoriler yükleniyor...</span>
-              </div>
-            ) : (
-              <Select value={categoryId} onValueChange={setCategoryId} disabled={loading}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Kategori seçin" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem 
-                      key={category.id} 
-                      value={category.id}
-                      disabled={category.is_premium && !user}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span>{category.icon && category.icon.length <= 2 ? category.icon : '📁'}</span>
-                        <span>{category.name}</span>
-                        {category.is_premium && <Lock className="h-3 w-3 text-secondary" />}
-                        {category.is_premium && !user && <span className="text-xs text-muted-foreground">(Üyelik gerekli)</span>}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </div>
+        {/* Kategori Seçimi */}
+        <div>
+          <Label className="text-sm font-medium mb-2 block">Kategori</Label>
+          {categoriesLoading ? (
+            <div className="flex items-center gap-2 p-3 border rounded-lg">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span className="text-sm">Kategoriler yükleniyor...</span>
+            </div>
+          ) : (
+            <Select value={categoryId} onValueChange={setCategoryId} disabled={loading}>
+              <SelectTrigger className="h-12">
+                <SelectValue placeholder="Hangi konuda?" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((category) => (
+                  <SelectItem 
+                    key={category.id} 
+                    value={category.id}
+                    disabled={category.is_premium && !user}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span>{category.icon && category.icon.length <= 2 ? category.icon : '📁'}</span>
+                      <span>{category.name}</span>
+                      {category.is_premium && <Lock className="h-3 w-3 text-amber-500" />}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="city">İl</Label>
+        {/* Konum Seçimi */}
+        <div>
+          <Label className="text-sm font-medium mb-2 block">📍 Konum</Label>
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
               {citiesLoading ? (
-                <div className="flex items-center gap-2 p-2">
+                <div className="flex items-center gap-2 p-3 border rounded-lg col-span-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-sm text-muted-foreground">İller yükleniyor...</span>
+                  <span className="text-sm">İller yükleniyor...</span>
                 </div>
               ) : (
-                <Select value={cityId} onValueChange={setCityId} disabled={loading}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="İl seçin (opsiyonel)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {cities.map((city) => (
-                      <SelectItem key={city.id} value={city.id.toString()}>
-                        {city.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <>
+                  <Select value={cityId} onValueChange={setCityId} disabled={loading}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="İl seçin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {cities.map((city) => (
+                        <SelectItem key={city.id} value={city.id.toString()}>
+                          {city.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  {districtsLoading ? (
+                    <div className="flex items-center gap-2 p-3 border rounded-lg">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="text-sm">İlçeler...</span>
+                    </div>
+                  ) : (
+                    <Select 
+                      value={districtId} 
+                      onValueChange={setDistrictId} 
+                      disabled={loading || !cityId || districts.length === 0}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="İlçe seçin" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {districts.map((district) => (
+                          <SelectItem key={district.id} value={district.id.toString()}>
+                            {district.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </>
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="district">İlçe</Label>
-              {districtsLoading ? (
-                <div className="flex items-center gap-2 p-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-sm text-muted-foreground">İlçeler yükleniyor...</span>
-                </div>
-              ) : (
-                <Select 
-                  value={districtId} 
-                  onValueChange={setDistrictId} 
-                  disabled={loading || !cityId || districts.length === 0}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="İlçe seçin (opsiyonel)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {districts.map((district) => (
-                      <SelectItem key={district.id} value={district.id.toString()}>
-                        {district.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+            {/* Özel Konum */}
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1 block">Özel konum (opsiyonel)</Label>
+              <Input
+                value={customLocation}
+                onChange={(e) => setCustomLocation(e.target.value)}
+                placeholder="Örn: Merkez Mahallesi, Kampüs, AVM..."
+                maxLength={100}
+                disabled={loading}
+              />
             </div>
           </div>
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="customLocation">Özel Konum (Opsiyonel)</Label>
-            <Input
-              id="customLocation"
-              value={customLocation}
-              onChange={(e) => setCustomLocation(e.target.value)}
-              placeholder="Örn: Merkez Mahallesi, Üniversite Kampüsü..."
-              maxLength={100}
-              disabled={loading}
-            />
-            <div className="text-xs text-muted-foreground">
-              Daha spesifik bir konum belirtmek isterseniz buraya yazabilirsiniz
-            </div>
-          </div>
+        {/* Paylaş Butonu */}
+        <Button 
+          type="submit" 
+          className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all" 
+          disabled={loading || !title.trim() || !content.trim() || !categoryId}
+        >
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              Paylaşılıyor...
+            </>
+          ) : (
+            <>
+              🚀 İtirafı Paylaş
+            </>
+          )}
+        </Button>
 
-          <Button 
-            type="submit" 
-            className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90" 
-            disabled={loading || !title.trim() || !content.trim() || !categoryId}
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Paylaşılıyor...
-              </>
-            ) : (
-              <>
-                ✨ İtiraf Paylaş
-              </>
-            )}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+        {/* Güvence Mesajı */}
+        <div className="text-center text-xs text-muted-foreground bg-muted/50 p-3 rounded-lg">
+          🔒 Gizlilik garantisi • IP adresi saklanmaz • Kimlik bilgisi istenmez
+        </div>
+      </form>
+    </div>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Heart, MessageCircle, ThumbsDown, Flag, Sparkles, Trash2, Share2 } from 'lucide-react';
+import { Heart, MessageCircle, ThumbsDown, Flag, Sparkles, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -39,7 +39,7 @@ interface PostCardProps {
   onComment: (postId: string) => void;
   onReport: (postId: string) => void;
   onShare: (postId: string) => void;
-  onDelete?: (postId: string) => void;
+
   userReaction?: 'like' | 'dislike' | null;
   currentUserId?: string;
   onClick?: () => void;
@@ -52,7 +52,6 @@ export function PostCard({
   onComment,
   onShare,
   onReport,
-  onDelete,
   userReaction,
   currentUserId,
   onClick,
@@ -199,19 +198,6 @@ export function PostCard({
             </div>
 
             <div className="flex gap-1">
-              {onDelete && currentUserId && post.author_id === currentUserId && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete(post.id);
-                  }}
-                  className="text-red-500 hover:text-red-700 hover:bg-red-50 h-8 sm:h-9"
-                >
-                  <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
-                </Button>
-              )}
               <Button
                 variant="ghost"
                 size="sm"

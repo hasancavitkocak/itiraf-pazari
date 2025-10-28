@@ -5,7 +5,9 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Crown, Ban, Search, Shield } from 'lucide-react';
+import { Crown, Ban, Search, Shield, Calendar } from 'lucide-react';
+import { formatDistanceToNow, format } from 'date-fns';
+import { tr } from 'date-fns/locale';
 import { toast } from 'sonner';
 import {
   Table,
@@ -134,10 +136,20 @@ export function UsersManagement() {
     }
   };
 
-  const filteredUsers = users.filter((user) =>
-    (user.username?.toLowerCase().includes(search.toLowerCase())) ||
-    user.id.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredUsers = users.filter((user) => {
+    const searchLower = search.toLowerCase();
+    const userDate = format(new Date(user.created_at), 'dd.MM.yyyy', { locale: tr });
+    
+    return (
+      (user.username?.toLowerCase().includes(searchLower)) ||
+      user.id.toLowerCase().includes(searchLower) ||
+      userDate.includes(searchLower) ||
+      formatDistanceToNow(new Date(user.created_at), { 
+        addSuffix: true, 
+        locale: tr 
+      }).toLowerCase().includes(searchLower)
+    );
+  });
 
   if (loading) {
     return (
@@ -152,14 +164,25 @@ export function UsersManagement() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">Kullanıcı Yönetimi</h2>
-          <Badge variant="outline">{users.length} kullanıcı</Badge>
+          <div className="flex gap-2">
+            <Badge variant="outline">
+              {users.length} toplam kullanıcı
+            </Badge>
+            <Badge variant="secondary">
+              {users.filter(user => {
+                const today = new Date().toDateString();
+                const userDate = new Date(user.created_at).toDateString();
+                return today === userDate;
+              }).length} bugün kayıt
+            </Badge>
+          </div>
         </div>
 
         <div className="flex items-center gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Kullanıcı adı veya ID ile ara..."
+              placeholder="Kullanıcı adı, ID veya kayıt tarihi ile ara..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-10"
@@ -172,6 +195,7 @@ export function UsersManagement() {
             <TableHeader>
               <TableRow>
                 <TableHead>Kullanıcı</TableHead>
+                <TableHead>Kayıt Tarihi</TableHead>
                 <TableHead>Rol</TableHead>
                 <TableHead>Premium</TableHead>
                 <TableHead>Durum</TableHead>
@@ -188,6 +212,22 @@ export function UsersManagement() {
                       </div>
                       <div className="text-xs text-muted-foreground font-mono">
                         {user.id.substring(0, 8)}...
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-3 w-3 text-muted-foreground" />
+                      <div>
+                        <div className="text-sm font-medium">
+                          {format(new Date(user.created_at), 'dd.MM.yyyy', { locale: tr })}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(user.created_at), { 
+                            addSuffix: true, 
+                            locale: tr 
+                          })}
+                        </div>
                       </div>
                     </div>
                   </TableCell>

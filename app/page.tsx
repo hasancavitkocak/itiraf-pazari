@@ -317,12 +317,6 @@ export default function Home() {
   };
 
   const openCommentDialog = async (postId: string) => {
-    if (!user) {
-      toast.error('Yorumları görmek için giriş yapmanız gerekiyor');
-      router.push('/auth');
-      return;
-    }
-
     setSelectedPostId(postId);
     setCommentDialogOpen(true);
 
@@ -332,8 +326,8 @@ export default function Home() {
       const comments = data.comments || [];
       setComments(comments);
 
-      // Yorum beğenilerini getir
-      if (comments.length > 0) {
+      // Yorum beğenilerini getir (sadece giriş yapmış kullanıcılar için)
+      if (comments.length > 0 && user) {
         const commentIds = comments.map((c: Comment) => c.id).join(',');
         const { data: { session } } = await supabase.auth.getSession();
         const headers: Record<string, string> = {};
@@ -515,33 +509,6 @@ export default function Home() {
     }
   };
 
-  const handleDeletePost = async (postId: string) => {
-    if (!confirm('Bu itirafı silmek istediğinizden emin misiniz?')) return;
-
-    try {
-      // Optimistic update - immediately remove from UI
-      setPosts(prevPosts => prevPosts.filter(post => post.id !== postId));
-
-      const response = await fetch(`/api/posts/${postId}`, {
-        method: 'DELETE',
-      });
-
-      console.log('Delete response status:', response.status);
-      const data = await response.json();
-      console.log('Delete response data:', data);
-
-      if (!response.ok) {
-        throw new Error(data.error || 'İtiraf silinirken hata oluştu');
-      }
-
-      toast.success('İtiraf silindi');
-    } catch (error: any) {
-      console.error('Delete error:', error);
-      toast.error(error.message);
-      // Revert optimistic update on error
-      await fetchPosts();
-    }
-  };
 
   const openReportDialog = (postId: string) => {
     setSelectedPostId(postId);
@@ -637,7 +604,7 @@ export default function Home() {
                 </div>
                 <div className="text-center flex-1">
                   <div className="text-base sm:text-lg font-bold mb-0.5">✍️ YENİ İTİRAF PAYLAŞ</div>
-                  <div className="text-xs opacity-90">Kayıt gerektirmez • Tamamen anonim</div>
+                  <div className="text-xs opacity-90">Kayıt gerektirmez • Gizlilik garantisi</div>
                 </div>
                 <div className="bg-white/20 rounded-full p-1.5">
                   <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 animate-pulse" />
@@ -940,7 +907,7 @@ export default function Home() {
                   onComment={openCommentDialog}
                   onReport={openReportDialog}
                   onShare={handleShare}
-                  onDelete={handleDeletePost}
+
                   userReaction={userReactions[post.id]}
                   currentUserId={user?.id}
                   onClick={() => router.push(`/post/${post.id}`)}
@@ -1069,15 +1036,21 @@ export default function Home() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleCommentLike(comment.id)}
+                          onClick={() => {
+                            if (!user) {
+                              toast.error('Beğenmek için giriş yapmanız gerekiyor');
+                              return;
+                            }
+                            handleCommentLike(comment.id);
+                          }}
                           className={`p-1 h-6 gap-1 ${
-                            commentLikes[comment.id] 
+                            user && commentLikes[comment.id] 
                               ? 'text-red-500 hover:text-red-600' 
                               : 'text-muted-foreground hover:text-red-500'
                           }`}
                         >
                           <Heart 
-                            className={`h-3 w-3 ${commentLikes[comment.id] ? 'fill-current' : ''}`} 
+                            className={`h-3 w-3 ${user && commentLikes[comment.id] ? 'fill-current' : ''}`} 
                           />
                           <span className="text-xs">{comment.likes_count || 0}</span>
                         </Button>
@@ -1100,18 +1073,40 @@ export default function Home() {
             </div>
             <div className="space-y-3">
               <Label className="text-sm">Yorum Ekle</Label>
-              <Textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Yorumunuzu yazın..."
-                rows={3}
-                autoFocus={false}
-                autoComplete="off"
-                className="text-base resize-none" // iOS zoom engellemek için
-              />
-              <Button onClick={handleSubmitComment} className="w-full" size="sm">
-                Yorum Yap
-              </Button>
+              {user ? (
+                <>
+                  <Textarea
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Yorumunuzu yazın..."
+                    rows={3}
+                    autoFocus={false}
+                    autoComplete="off"
+                    className="text-base resize-none"
+                  />
+                  <Button onClick={handleSubmitComment} className="w-full" size="sm">
+                    Yorum Yap
+                  </Button>
+                </>
+              ) : (
+                <div className="text-center py-4 space-y-3">
+                  <div className="bg-muted/50 rounded-lg p-4">
+                    <p className="text-sm text-muted-foreground mb-3">
+                      🔒 Yorum yapmak için giriş yapmanız gerekiyor
+                    </p>
+                    <Button 
+                      onClick={() => {
+                        setCommentDialogOpen(false);
+                        router.push('/auth');
+                      }}
+                      className="w-full"
+                      size="sm"
+                    >
+                      Giriş Yap
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </DialogContent>
@@ -1148,11 +1143,10 @@ export default function Home() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
               <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
-              <span className="hidden sm:inline">Kayıt Gerektirmez, Sadece Cesaret - Yeni İtiraf Paylaş</span>
-              <span className="sm:hidden">Yeni İtiraf Paylaş</span>
+              <span>İtiraf Paylaş</span>
             </DialogTitle>
             <DialogDescription className="text-sm sm:text-base">
-              İtirafınızı tamamen anonim olarak paylaşın. Kimlik bilgileriniz saklanmaz.
+              Kayıt gerektirmez, sadece cesaret. Gizliliğin garantisi altında paylaşın.
             </DialogDescription>
           </DialogHeader>
           <div className="mt-4">
