@@ -93,6 +93,43 @@ const faqData: FAQItem[] = [
     answer: 'Teknik sorunlar için "Bize Ulaşın" sayfasından bizimle iletişime geçebilirsiniz. Sorunlarınızı en kısa sürede çözmeye çalışıyoruz.',
     category: 'teknik',
     icon: <HelpCircle className="h-5 w-5" />
+  },
+  
+  // Yeni Eklenen Sorular
+  {
+    id: 'itiraf-silme',
+    question: 'İtirafımı silebilir miyim?',
+    answer: 'Güvenlik ve anonimlik nedeniyle kullanıcılar kendi itiraflarını silemez. Ancak uygunsuz içerik paylaştıysanız "Bize Ulaşın" sayfasından bildirebilirsiniz. Moderatörlerimiz gerekli incelemeyi yapar.',
+    category: 'kullanim',
+    icon: <MessageCircle className="h-5 w-5" />
+  },
+  {
+    id: 'detay-sayfasi',
+    question: 'İtiraf detay sayfası nedir?',
+    answer: 'Her itirafın kendine özel bir detay sayfası vardır. İtiraf kartına tıklayarak bu sayfaya gidebilir, yorumları görebilir, paylaşabilir ve etkileşimde bulunabilirsiniz. Bu sayfa üzerinden itirafı sosyal medyada da paylaşabilirsiniz.',
+    category: 'kullanim',
+    icon: <MessageCircle className="h-5 w-5" />
+  },
+  {
+    id: 'yorum-goruntuleme',
+    question: 'Yorumları görmek için üye olmam gerekir mi?',
+    answer: 'Hayır! Yorumları görmek için üye olmanız gerekmez. Herkes tüm yorumları okuyabilir. Ancak yorum yapmak, beğenmek veya yorum beğenmek için üye olmanız gerekir.',
+    category: 'kullanim',
+    icon: <Users className="h-5 w-5" />
+  },
+  {
+    id: 'karakter-limiti',
+    question: 'İtiraf yazarken karakter sınırı var mı?',
+    answer: 'Evet, itiraflarınız maksimum 2000 karakter olabilir. Bu, yaklaşık 300-400 kelimelik bir metin demektir. Başlık için ise 100 karakter sınırı vardır.',
+    category: 'kullanim',
+    icon: <MessageCircle className="h-5 w-5" />
+  },
+  {
+    id: 'konum-gizliligi',
+    question: 'Konum bilgim güvende mi?',
+    answer: 'Evet! Konum bilginiz tamamen güvendedir. Sadece seçtiğiniz il/ilçe bilgisi gösterilir, kesin konum bilginiz asla saklanmaz veya paylaşılmaz. İsterseniz özel konum da ekleyebilirsiniz.',
+    category: 'guvenlik',
+    icon: <Shield className="h-5 w-5" />
   }
 ];
 
