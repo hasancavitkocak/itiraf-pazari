@@ -24,14 +24,41 @@ export async function POST(request: NextRequest) {
     const userAgent = request.headers.get('user-agent') || 'unknown';
     const ipHash = `${ip}-${userAgent}`;
 
+    // Kullanıcı kontrolü
+    let userId = null;
+    const authHeader = request.headers.get('authorization');
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user } } = await supabaseAdmin.auth.getUser(token);
+      userId = user?.id || null;
+      
+      // Eğer kullanıcı giriş yaptıysa, bu post için IP'ye ait eski anonim kayıtları sil
+      if (userId) {
+        await supabaseAdmin
+          .from('reactions')
+          .delete()
+          .eq('post_id', post_id)
+          .eq('ip_hash', ipHash)
+          .is('user_id', null);
+      }
+    }
+
     const today = new Date().toISOString().split('T')[0];
 
-    const { data: existingReactions } = await supabaseAdmin
+    // Günlük limit kontrolü
+    let limitQuery = supabaseAdmin
       .from('reactions')
       .select('id')
-      .eq('ip_hash', ipHash)
       .gte('created_at', `${today}T00:00:00`)
       .lte('created_at', `${today}T23:59:59`);
+
+    if (userId) {
+      limitQuery = limitQuery.eq('user_id', userId);
+    } else {
+      limitQuery = limitQuery.eq('ip_hash', ipHash).is('user_id', null);
+    }
+
+    const { data: existingReactions } = await limitQuery;
 
     if (existingReactions && existingReactions.length >= 30) {
       return NextResponse.json(
@@ -40,12 +67,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: existingReaction } = await supabaseAdmin
+    // Mevcut reaction kontrolü
+    let reactionQuery = supabaseAdmin
       .from('reactions')
       .select('*')
-      .eq('post_id', post_id)
-      .eq('ip_hash', ipHash)
-      .maybeSingle();
+      .eq('post_id', post_id);
+
+    if (userId) {
+      reactionQuery = reactionQuery.eq('user_id', userId);
+    } else {
+      reactionQuery = reactionQuery.eq('ip_hash', ipHash).is('user_id', null);
+    }
+
+    const { data: existingReaction } = await reactionQuery.maybeSingle();
 
     if (existingReaction) {
       if (existingReaction.type === type) {
@@ -79,6 +113,7 @@ export async function POST(request: NextRequest) {
         post_id,
         type,
         ip_hash: ipHash,
+        user_id: userId,
       });
 
     if (error) throw error;
@@ -127,11 +162,27 @@ export async function GET(request: NextRequest) {
     const userAgent = request.headers.get('user-agent') || 'unknown';
     const ipHash = `${ip}-${userAgent}`;
 
-    const { data, error } = await supabaseAdmin
+    // Kullanıcı kontrolü
+    let userId = null;
+    const authHeader = request.headers.get('authorization');
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user } } = await supabaseAdmin.auth.getUser(token);
+      userId = user?.id || null;
+    }
+
+    let query = supabaseAdmin
       .from('reactions')
       .select('post_id, type')
-      .eq('ip_hash', ipHash)
       .in('post_id', postIds);
+
+    if (userId) {
+      query = query.eq('user_id', userId);
+    } else {
+      query = query.eq('ip_hash', ipHash).is('user_id', null);
+    }
+
+    const { data, error } = await query;
 
     if (error) throw error;
 

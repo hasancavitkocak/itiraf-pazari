@@ -32,21 +32,21 @@ export async function GET(request: NextRequest) {
     // Get usernames for comments with author_id using admin client
     const commentsWithUsernames = await Promise.all(
       (data || []).map(async (comment) => {
+        let username = 'anonymous'; // Varsayılan olarak anonymous
+        
         if (comment.author_id) {
           const { data: profile } = await supabaseAdmin
             .from('profiles')
-            .select('display_username')
+            .select('username')
             .eq('id', comment.author_id)
             .single();
           
-          return {
-            ...comment,
-            username: profile?.display_username || null
-          };
+          username = profile?.username || 'anonymous';
         }
+        
         return {
           ...comment,
-          username: null
+          username
         };
       })
     );
@@ -121,14 +121,14 @@ export async function POST(request: NextRequest) {
     // Get username for the new comment
     const { data: profile } = await supabaseAdmin
       .from('profiles')
-      .select('display_username')
+      .select('username')
       .eq('id', user.id)
       .single();
 
     return NextResponse.json({ 
       comment: {
         ...data,
-        username: profile?.display_username || null
+        username: profile?.username || 'anonymous'
       }
     });
   } catch (error: any) {

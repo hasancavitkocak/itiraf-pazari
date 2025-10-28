@@ -54,16 +54,17 @@ export async function GET(
     // Yasaklı kelimeleri al
     const badWords = await getBadWords();
 
-    // Display username'i al
-    let username = null;
+    // Username'i al
+    let username = 'anonymous'; // Varsayılan olarak anonymous
+    
     if (post.author_id) {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('display_username')
+        .select('username')
         .eq('id', post.author_id)
         .single();
       
-      username = profile?.display_username || null;
+      username = profile?.username || 'anonymous';
     }
 
     // Yasaklı kelimeleri filtrele ve username ekle

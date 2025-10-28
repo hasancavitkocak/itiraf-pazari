@@ -82,6 +82,8 @@ export default function PostDetailPage() {
 
   useEffect(() => {
     if (postId) {
+      setLoading(true);
+      setPost(null);
       fetchPost();
       fetchComments();
       fetchUserReaction();
@@ -172,8 +174,10 @@ export default function PostDetailPage() {
       
       const currentIndex = posts.findIndex((p: Post) => p.id === postId);
       if (currentIndex !== -1) {
-        setNextPostId(currentIndex > 0 ? posts[currentIndex - 1].id : null);
-        setPrevPostId(currentIndex < posts.length - 1 ? posts[currentIndex + 1].id : null);
+        // Önceki = daha yeni (index - 1)
+        setPrevPostId(currentIndex > 0 ? posts[currentIndex - 1].id : null);
+        // Sonraki = daha eski (index + 1)
+        setNextPostId(currentIndex < posts.length - 1 ? posts[currentIndex + 1].id : null);
       }
     } catch (error) {
       console.error('Error fetching navigation posts:', error);
@@ -222,7 +226,7 @@ export default function PostDetailPage() {
       const response = await fetch('/api/reactions', {
         method: 'POST',
         headers,
-        body: JSON.stringify({ postId, type })
+        body: JSON.stringify({ post_id: postId, type })
       });
 
       if (!response.ok) {
@@ -262,7 +266,7 @@ export default function PostDetailPage() {
           'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
-          postId,
+          post_id: postId,
           content: newComment.trim()
         })
       });
@@ -395,7 +399,7 @@ export default function PostDetailPage() {
         method: 'POST',
         headers,
         body: JSON.stringify({
-          postId,
+          post_id: postId,
           reason: reportReason
         })
       });
@@ -412,7 +416,7 @@ export default function PostDetailPage() {
     }
   };
 
-  if (loading) {
+  if (loading || !post) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Header />
@@ -420,21 +424,6 @@ export default function PostDetailPage() {
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
             <p>İtiraf yükleniyor...</p>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (!post) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <Header />
-        <main className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-lg mb-4">İtiraf bulunamadı</p>
-            <Button onClick={() => router.push('/')}>Ana Sayfaya Dön</Button>
           </div>
         </main>
         <Footer />
@@ -464,28 +453,26 @@ export default function PostDetailPage() {
             </Button>
             
             <div className="flex items-center gap-2">
-              {prevPostId && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => router.push(`/post/${prevPostId}`)}
-                  className="gap-1"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Önceki
-                </Button>
-              )}
-              {nextPostId && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => router.push(`/post/${nextPostId}`)}
-                  className="gap-1"
-                >
-                  Sonraki
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => prevPostId && router.push(`/post/${prevPostId}`)}
+                disabled={!prevPostId}
+                className="gap-1"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Önceki
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => nextPostId && router.push(`/post/${nextPostId}`)}
+                disabled={!nextPostId}
+                className="gap-1"
+              >
+                Sonraki
+                <ChevronRight className="h-4 w-4" />
+              </Button>
             </div>
           </div>
 
@@ -502,9 +489,11 @@ export default function PostDetailPage() {
                         <span>{post.categories.name}</span>
                       </Badge>
                     )}
-                    <Badge variant="outline" className="gap-1">
-                      <span>@{post.username || 'Anonim'}</span>
-                    </Badge>
+                    {post.username && (
+                      <Badge variant="outline" className="gap-1">
+                        <span>@{post.username}</span>
+                      </Badge>
+                    )}
                     {post.is_boosted && (
                       <Badge variant="default" className="gap-1 premium-gradient text-white">
                         <Sparkles className="h-3 w-3" />
@@ -539,46 +528,62 @@ export default function PostDetailPage() {
 
               {/* Action Buttons */}
               <div className="flex items-center justify-between pt-4 border-t">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                   <Button
-                    variant="outline"
+                    variant={userReaction === 'like' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => handleReaction('like')}
-                    className={userReaction === 'like' ? 'text-red-500 border-red-200 bg-red-50' : ''}
+                    className={`gap-1.5 transition-all ${
+                      userReaction === 'like' 
+                        ? 'bg-red-500 hover:bg-red-600 text-white' 
+                        : 'hover:bg-red-50 hover:text-red-500'
+                    }`}
                   >
                     <Heart className={`h-4 w-4 ${userReaction === 'like' ? 'fill-current' : ''}`} />
-                    {post.likes_count || 0}
+                    <span className="font-medium">{(post.likes_count || 0).toLocaleString('tr-TR')}</span>
                   </Button>
                   
                   <Button
-                    variant="outline"
+                    variant={userReaction === 'dislike' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => handleReaction('dislike')}
-                    className={userReaction === 'dislike' ? 'text-blue-500 border-blue-200 bg-blue-50' : ''}
+                    className={`gap-1.5 transition-all ${
+                      userReaction === 'dislike' 
+                        ? 'bg-gray-500 hover:bg-gray-600 text-white' 
+                        : 'hover:bg-gray-50 hover:text-gray-500'
+                    }`}
                   >
                     <ThumbsDown className={`h-4 w-4 ${userReaction === 'dislike' ? 'fill-current' : ''}`} />
-                    {post.dislikes_count || 0}
+                    <span className="font-medium">{(post.dislikes_count || 0).toLocaleString('tr-TR')}</span>
                   </Button>
                   
                   <Button
-                    variant="outline"
+                    variant="ghost"
+                    size="sm"
+                    className="gap-1.5 hover:bg-blue-50 hover:text-blue-500 transition-all"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    <span className="font-medium">{(post.comments_count || 0).toLocaleString('tr-TR')}</span>
+                  </Button>
+                  
+                  <Button
+                    variant="ghost"
                     size="sm"
                     onClick={handleShare}
-                    className="gap-1"
+                    className="gap-1.5 hover:bg-green-50 hover:text-green-500 transition-all"
                   >
                     <Share2 className="h-4 w-4" />
-                    Paylaş
+                    <span className="hidden sm:inline">Paylaş</span>
                   </Button>
                 </div>
                 
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   onClick={() => setReportDialogOpen(true)}
                   className="gap-1"
                 >
                   <Flag className="h-4 w-4" />
-                  Şikayet Et
                 </Button>
               </div>
             </div>
@@ -632,7 +637,7 @@ export default function PostDetailPage() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="text-xs font-medium text-primary">
-                              {comment.username || 'Anonim'}
+                              @{comment.username || 'anonymous'}
                             </span>
                             <span className="text-xs text-muted-foreground">
                               {formatDistanceToNow(new Date(comment.created_at), {

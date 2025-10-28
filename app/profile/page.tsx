@@ -145,10 +145,21 @@ export default function ProfilePage() {
         throw new Error(data.error || 'Şifre değiştirme başarısız');
       }
 
+      // Yeni session'ı ayarla
+      if (data.session) {
+        await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token
+        });
+      }
+
       toast.success('Şifre başarıyla değiştirildi');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
+      
+      // Profili yenile
+      await refreshProfile();
     } catch (error: any) {
       toast.error(error.message);
     } finally {

@@ -72,8 +72,19 @@ export async function POST(request: NextRequest) {
       throw updateError;
     }
 
+    // Yeni session oluştur
+    const { data: sessionData, error: sessionError } = await supabaseAdmin.auth.signInWithPassword({
+      email: user.email!,
+      password: newPassword,
+    });
+
+    if (sessionError) {
+      console.error('Session creation error:', sessionError);
+    }
+
     return NextResponse.json({ 
-      message: 'Şifre başarıyla değiştirildi'
+      message: 'Şifre başarıyla değiştirildi',
+      session: sessionData.session
     });
   } catch (error: any) {
     console.error('Change password error:', error);
