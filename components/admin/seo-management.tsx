@@ -89,6 +89,8 @@ interface CitySEO {
   keywords: string;
   post_count: number;
   last_updated: string;
+  redirect_url?: string;
+  redirect_type?: number; // 0: yok, 301: kalıcı, 302: geçici
 }
 
 export function SEOManagement() {
@@ -720,6 +722,17 @@ export function SEOManagement() {
                         <div className="text-sm">
                           <strong>Keywords:</strong> {city.keywords || `${city.name} itiraf, ${city.name} hikaye`}
                         </div>
+                        {city.redirect_type && city.redirect_type > 0 && (
+                          <div className="text-sm">
+                            <strong>Yönlendirme:</strong> 
+                            <Badge variant="outline" className="ml-2">
+                              {city.redirect_type === 301 ? '301 Kalıcı' : '302 Geçici'}
+                            </Badge>
+                            <div className="text-xs text-muted-foreground mt-1">
+                              → {city.redirect_url}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </CardContent>
@@ -771,6 +784,45 @@ export function SEOManagement() {
                     placeholder={`${editingCity?.name || 'şehir'} itiraf, ${editingCity?.name || 'şehir'} hikaye, anonim paylaşım`}
                   />
                   <p className="text-xs text-muted-foreground">Virgülle ayırın</p>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Link className="h-4 w-4" />
+                    <Label className="text-base font-medium">301 Yönlendirme Ayarları</Label>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Yönlendirme Tipi</Label>
+                    <select
+                      value={editingCity?.redirect_type || 0}
+                      onChange={(e) => setEditingCity(prev => prev ? { ...prev, redirect_type: parseInt(e.target.value) } : null)}
+                      className="w-full p-2 border rounded-md"
+                    >
+                      <option value={0}>Yönlendirme Yok</option>
+                      <option value={301}>301 - Kalıcı Yönlendirme</option>
+                      <option value={302}>302 - Geçici Yönlendirme</option>
+                    </select>
+                    <p className="text-xs text-muted-foreground">
+                      SEO için 301 kalıcı yönlendirme önerilir
+                    </p>
+                  </div>
+
+                  {(editingCity?.redirect_type || 0) > 0 && (
+                    <div className="space-y-2">
+                      <Label>Yönlendirme URL'si</Label>
+                      <Input
+                        value={editingCity?.redirect_url || ''}
+                        onChange={(e) => setEditingCity(prev => prev ? { ...prev, redirect_url: e.target.value } : null)}
+                        placeholder="https://example.com/yeni-sayfa"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Tam URL girin (https:// ile başlayan)
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex justify-end gap-2">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Suspense } from 'react';
 import { Header } from '@/components/header';
 import { NewPostForm } from '@/components/new-post-form';
 import { PostCard } from '@/components/post-card';
@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Loader as Loader2, Lock, Trash2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
@@ -84,15 +84,17 @@ interface Comment {
   likes_count: number;
 }
 
-export default function Home() {
+function HomeContent() {
   const { user } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [isInitialized, setIsInitialized] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [posts, setPosts] = useState<Post[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedCity, setSelectedCity] = useState<string | undefined>(undefined);
-  const [selectedDistrict, setSelectedDistrict] = useState<string | undefined>(undefined);
+  const [selectedCity, setSelectedCity] = useState<string | undefined>('all');
+  const [selectedDistrict, setSelectedDistrict] = useState<string | undefined>('all');
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [cities, setCities] = useState<City[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
@@ -154,7 +156,7 @@ export default function Home() {
   };
 
   const fetchDistricts = async (cityId: string) => {
-    if (!cityId) {
+    if (!cityId || cityId === 'all') {
       setDistricts([]);
       return;
     }
@@ -227,6 +229,86 @@ export default function Home() {
     fetchCities();
   }, []);
 
+  // Şehir ID'sini bul (name'e göre)
+  const getCityIdByName = (cityName: string) => {
+    const city = cities.find(c => c.name === cityName);
+    return city ? city.id.toString() : '34'; // Fallback olarak İstanbul plaka kodu
+  };
+
+  // URL parametrelerinden filtreleri oku (sadece ilk yüklemede)
+  useEffect(() => {
+    if (isInitialized) return; // Zaten initialize edilmişse çık
+    
+    const cityParam = searchParams.get('city');
+    const categoryParam = searchParams.get('category');
+    const searchParam = searchParams.get('search');
+    const sortParam = searchParams.get('sort');
+    const periodParam = searchParams.get('period');
+    
+    // Şehir parametresi
+    if (cityParam) {
+      setSelectedCity(cityParam);
+    }
+    
+    // Kategori parametresi
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+    }
+    
+    // Arama parametresi
+    if (searchParam) {
+      setSearchKeyword(searchParam);
+    }
+    
+    // Sıralama parametresi
+    if (sortParam && ['newest', 'popular', 'trending'].includes(sortParam)) {
+      setSortBy(sortParam as 'newest' | 'popular' | 'trending');
+    }
+    
+    // Trend periyodu parametresi
+    if (periodParam && ['24h', '7d', '30d'].includes(periodParam)) {
+      setTrendPeriod(periodParam as '24h' | '7d' | '30d');
+    }
+    
+    setIsInitialized(true);
+  }, [searchParams, isInitialized]);
+
+  // Filtreler değiştiğinde URL'yi güncelle (initialization sonrasında)
+  useEffect(() => {
+    if (!isInitialized) return; // Initialize edilmeden URL güncelleme yapma
+    
+    const params = new URLSearchParams();
+    
+    if (selectedCategory && selectedCategory !== 'all') {
+      params.set('category', selectedCategory);
+    }
+    
+    if (selectedCity && selectedCity !== 'all') {
+      params.set('city', selectedCity);
+    }
+    
+    if (selectedDistrict) {
+      params.set('district', selectedDistrict);
+    }
+    
+    if (searchKeyword) {
+      params.set('search', searchKeyword);
+    }
+    
+    if (sortBy !== 'newest') {
+      params.set('sort', sortBy);
+    }
+    
+    if (sortBy === 'trending' && trendPeriod !== '24h') {
+      params.set('period', trendPeriod);
+    }
+    
+    const newUrl = params.toString() ? `/?${params.toString()}` : '/';
+    
+    // URL'yi güncelle (sayfa yenilenmeden)
+    window.history.replaceState({}, '', newUrl);
+  }, [selectedCategory, selectedCity, selectedDistrict, searchKeyword, sortBy, trendPeriod, isInitialized]);
+
   useEffect(() => {
     setCurrentPage(1); // Reset to first page when filters change
   }, [selectedCategory, selectedCity, selectedDistrict, searchKeyword, sortBy, trendPeriod]);
@@ -234,10 +316,10 @@ export default function Home() {
   useEffect(() => {
     if (selectedCity) {
       fetchDistricts(selectedCity);
-      setSelectedDistrict(undefined); // Reset district when city changes
+      setSelectedDistrict('all'); // Reset district when city changes
     } else {
       setDistricts([]);
-      setSelectedDistrict(undefined);
+      setSelectedDistrict('all');
     }
   }, [selectedCity]);
 
@@ -858,8 +940,8 @@ export default function Home() {
                           variant="outline" 
                           onClick={() => {
                             setSelectedCategory('all');
-                            setSelectedCity(undefined);
-                            setSelectedDistrict(undefined);
+                            setSelectedCity('all');
+                            setSelectedDistrict('all');
                             setSearchKeyword('');
                           }}
                           className="w-full"
@@ -1166,7 +1248,127 @@ export default function Home() {
 
 
 
+      {/* Şehir İtirafları Bölümü */}
+      <section className="bg-muted/30 py-12">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold mb-2">Şehir İtirafları</h2>
+            <p className="text-muted-foreground">
+              Türkiye'nin her yerinden şehir bazında itirafları keşfedin
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            <Link 
+              href={`/?city=${getCityIdByName('İstanbul')}`}
+              className="group p-4 bg-background rounded-lg border hover:border-primary/50 transition-all hover:shadow-md"
+            >
+              <div className="text-center">
+                <div className="text-2xl mb-2">🏙️</div>
+                <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">İstanbul</h3>
+                <p className="text-xs text-muted-foreground">İtirafları Gör</p>
+              </div>
+            </Link>
+            
+            <Link 
+              href={`/?city=${getCityIdByName('Ankara')}`}
+              className="group p-4 bg-background rounded-lg border hover:border-primary/50 transition-all hover:shadow-md"
+            >
+              <div className="text-center">
+                <div className="text-2xl mb-2">🏛️</div>
+                <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">Ankara</h3>
+                <p className="text-xs text-muted-foreground">İtirafları Gör</p>
+              </div>
+            </Link>
+            
+            <Link 
+              href={`/?city=${getCityIdByName('İzmir')}`}
+              className="group p-4 bg-background rounded-lg border hover:border-primary/50 transition-all hover:shadow-md"
+            >
+              <div className="text-center">
+                <div className="text-2xl mb-2">🌊</div>
+                <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">İzmir</h3>
+                <p className="text-xs text-muted-foreground">İtirafları Gör</p>
+              </div>
+            </Link>
+            
+            <Link 
+              href={`/?city=${getCityIdByName('Bursa')}`}
+              className="group p-4 bg-background rounded-lg border hover:border-primary/50 transition-all hover:shadow-md"
+            >
+              <div className="text-center">
+                <div className="text-2xl mb-2">🏔️</div>
+                <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">Bursa</h3>
+                <p className="text-xs text-muted-foreground">İtirafları Gör</p>
+              </div>
+            </Link>
+            
+            <Link 
+              href={`/?city=${getCityIdByName('Antalya')}`}
+              className="group p-4 bg-background rounded-lg border hover:border-primary/50 transition-all hover:shadow-md"
+            >
+              <div className="text-center">
+                <div className="text-2xl mb-2">🏖️</div>
+                <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">Antalya</h3>
+                <p className="text-xs text-muted-foreground">İtirafları Gör</p>
+              </div>
+            </Link>
+            
+            <Link 
+              href={`/?city=${getCityIdByName('Adana')}`}
+              className="group p-4 bg-background rounded-lg border hover:border-primary/50 transition-all hover:shadow-md"
+            >
+              <div className="text-center">
+                <div className="text-2xl mb-2">🌶️</div>
+                <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">Adana</h3>
+                <p className="text-xs text-muted-foreground">İtirafları Gör</p>
+              </div>
+            </Link>
+            
+            <Link 
+              href={`/?city=${getCityIdByName('Konya')}`}
+              className="group p-4 bg-background rounded-lg border hover:border-primary/50 transition-all hover:shadow-md"
+            >
+              <div className="text-center">
+                <div className="text-2xl mb-2">🕌</div>
+                <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">Konya</h3>
+                <p className="text-xs text-muted-foreground">İtirafları Gör</p>
+              </div>
+            </Link>
+            
+            <Link 
+              href={`/?city=${getCityIdByName('Gaziantep')}`}
+              className="group p-4 bg-background rounded-lg border hover:border-primary/50 transition-all hover:shadow-md"
+            >
+              <div className="text-center">
+                <div className="text-2xl mb-2">🥙</div>
+                <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">Gaziantep</h3>
+                <p className="text-xs text-muted-foreground">İtirafları Gör</p>
+              </div>
+            </Link>
+          </div>
+          
+          <div className="text-center mt-6">
+            <p className="text-sm text-muted-foreground">
+              Daha fazla şehir yakında eklenecek...
+            </p>
+          </div>
+        </div>
+      </section>
+
       <Footer />
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }

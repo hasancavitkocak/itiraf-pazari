@@ -31,7 +31,9 @@ export async function GET() {
           description: seoSettings?.description || `${city.name}'dan anonim itiraflar. ${city.name} şehrinden gerçek hikayeler, deneyimler ve itiraflar. Tamamen anonim ve güvenli.`,
           keywords: seoSettings?.keywords || `${city.name} itiraf, ${city.name} anonim itiraf, ${city.name} hikaye, ${city.name} deneyim`,
           post_count: count || 0,
-          last_updated: seoSettings?.updated_at || new Date().toISOString()
+          last_updated: seoSettings?.updated_at || new Date().toISOString(),
+          redirect_url: seoSettings?.redirect_url || null,
+          redirect_type: seoSettings?.redirect_type || 0
         };
       })
     );
@@ -53,7 +55,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, title, description, keywords } = body;
+    const { id, title, description, keywords, redirect_url, redirect_type } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -70,7 +72,11 @@ export async function POST(request: NextRequest) {
         title: title || null,
         description: description || null,
         keywords: keywords || null,
+        redirect_url: redirect_url || null,
+        redirect_type: redirect_type || 0,
         updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'city_id'
       });
 
     if (error) throw error;
@@ -101,6 +107,8 @@ export async function PUT(request: NextRequest) {
           city_id,
           is_active,
           updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'city_id'
         });
 
       if (error) throw error;

@@ -71,5 +71,29 @@ export default async function CityConfessionPageRoute({ params }: Props) {
     notFound();
   }
 
-  return <CityConfessionPage city={city} />;
+  // Yönlendirme kontrolü
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/admin/seo/cities/${city.id}`);
+    if (response.ok) {
+      const data = await response.json();
+      const settings = data.settings;
+      
+      // Eğer özel yönlendirme ayarlanmışsa
+      if (settings?.redirect_type && settings.redirect_type > 0 && settings.redirect_url) {
+        const { redirect } = await import('next/navigation');
+        
+        if (settings.redirect_type === 301) {
+          redirect(settings.redirect_url); // 301 kalıcı yönlendirme
+        } else if (settings.redirect_type === 302) {
+          redirect(settings.redirect_url); // 302 geçici yönlendirme
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Redirect check error:', error);
+  }
+
+  // Varsayılan olarak ana sayfaya şehir filtresi ile yönlendir
+  const { redirect } = await import('next/navigation');
+  redirect(`/?city=${city.id}`);
 }

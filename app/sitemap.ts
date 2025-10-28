@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next'
 import { createClient } from '@supabase/supabase-js'
+import { seoCities } from '@/lib/cities-seo'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://www.itirafsayfasi.com'
@@ -82,7 +83,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     })) || []
 
-    return [...staticPages, ...categoryPages, ...postPages]
+    // City pages - SEO için şehir URL'leri
+    const cityPages: MetadataRoute.Sitemap = seoCities.map(city => ({
+      url: `${baseUrl}/${city.slug}-itiraf`,
+      lastModified: new Date(),
+      changeFrequency: 'daily' as const,
+      priority: 0.9, // Şehir sayfaları yüksek öncelik
+    }))
+
+    // City filter pages - Ana sayfa şehir filtreleri
+    const cityFilterPages: MetadataRoute.Sitemap = seoCities.map(city => ({
+      url: `${baseUrl}/?city=${city.id}`,
+      lastModified: new Date(),
+      changeFrequency: 'daily' as const,
+      priority: 0.8,
+    }))
+
+    return [...staticPages, ...categoryPages, ...postPages, ...cityPages, ...cityFilterPages]
   } catch (error) {
     console.error('Error generating sitemap:', error)
     return staticPages

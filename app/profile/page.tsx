@@ -34,7 +34,7 @@ interface Post {
 }
 
 export default function ProfilePage() {
-  const { user, profile, refreshProfile, signOut } = useAuth();
+  const { user, profile, loading: authLoading, refreshProfile, signOut } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [postsLoading, setPostsLoading] = useState(true);
@@ -45,6 +45,12 @@ export default function ProfilePage() {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   useEffect(() => {
+    // Auth loading tamamlanana kadar bekle
+    if (authLoading) {
+      return;
+    }
+
+    // Auth loading tamamlandıktan sonra user yoksa yönlendir
     if (!user) {
       router.push('/auth');
       return;
@@ -52,7 +58,7 @@ export default function ProfilePage() {
 
     // Kullanıcının gönderilerini yükle
     fetchUserPosts();
-  }, [user, profile, router]);
+  }, [user, profile, router, authLoading]);
 
   const fetchUserPosts = async () => {
     if (!user) return;
@@ -169,7 +175,17 @@ export default function ProfilePage() {
 
 
 
-  if (!user || !profile) {
+  // Auth loading durumunda loading göster
+  if (authLoading || (!user && !authLoading)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // User yok ve loading tamamlandıysa (zaten useEffect'te yönlendirme yapılacak)
+  if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
