@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
@@ -30,7 +31,11 @@ import {
   Zap,
   Shield,
   Target,
-  Loader2
+  Loader2,
+  MapPin,
+  Edit,
+  Trash2,
+  Plus
 } from 'lucide-react';
 
 interface SEOSettings {
@@ -74,6 +79,18 @@ interface IndexingStatus {
   coverage_issues: string[];
 }
 
+interface CitySEO {
+  id: number;
+  slug: string;
+  name: string;
+  is_active: boolean;
+  title: string;
+  description: string;
+  keywords: string;
+  post_count: number;
+  last_updated: string;
+}
+
 export function SEOManagement() {
   const [settings, setSettings] = useState<SEOSettings>({
     site_title: '',
@@ -103,9 +120,16 @@ export function SEOManagement() {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<SEOAnalysis | null>(null);
   const [indexingStatus, setIndexingStatus] = useState<IndexingStatus | null>(null);
+  
+  // Şehir SEO state'leri
+  const [cities, setCities] = useState<CitySEO[]>([]);
+  const [loadingCities, setLoadingCities] = useState(false);
+  const [editingCity, setEditingCity] = useState<CitySEO | null>(null);
+  const [cityDialogOpen, setCityDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchSettings();
+    fetchCities();
   }, []);
 
   const fetchSettings = async () => {
@@ -203,6 +227,67 @@ export function SEOManagement() {
     }
   };
 
+  // Şehir SEO fonksiyonları
+  const fetchCities = async () => {
+    try {
+      setLoadingCities(true);
+      const response = await fetch('/api/admin/seo/cities');
+      const data = await response.json();
+      if (data.success) {
+        setCities(data.cities || []);
+      }
+    } catch (error) {
+      console.error('Error fetching cities:', error);
+      toast.error('Şehir listesi yüklenemedi');
+    } finally {
+      setLoadingCities(false);
+    }
+  };
+
+  const toggleCityStatus = async (cityId: number, isActive: boolean) => {
+    try {
+      const response = await fetch('/api/admin/seo/cities', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          action: 'toggle_status',
+          city_id: cityId, 
+          is_active: isActive 
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setCities(prev => prev.map(city => 
+          city.id === cityId ? { ...city, is_active: isActive } : city
+        ));
+        toast.success(`Şehir ${isActive ? 'aktif' : 'pasif'} edildi`);
+      }
+    } catch (error) {
+      toast.error('Durum güncellenemedi');
+    }
+  };
+
+  const saveCityMeta = async (cityData: Partial<CitySEO>) => {
+    try {
+      const response = await fetch('/api/admin/seo/cities', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(cityData),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        fetchCities(); // Listeyi yenile
+        setCityDialogOpen(false);
+        setEditingCity(null);
+        toast.success('Şehir SEO ayarları kaydedildi');
+      }
+    } catch (error) {
+      toast.error('Kaydetme başarısız');
+    }
+  };
+
   const getSEOScore = () => {
     if (!analysis) return 0;
     
@@ -245,17 +330,21 @@ export function SEOManagement() {
       </div>
 
       <Tabs defaultValue="settings" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="settings" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
             Ayarlar
+          </TabsTrigger>
+          <TabsTrigger value="cities" className="flex items-center gap-2">
+            <Globe className="h-4 w-4" />
+            Şehir SEO
           </TabsTrigger>
           <TabsTrigger value="analysis" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
             Analiz
           </TabsTrigger>
           <TabsTrigger value="indexing" className="flex items-center gap-2">
-            <Globe className="h-4 w-4" />
+            <RefreshCw className="h-4 w-4" />
             İndexleme
           </TabsTrigger>
           <TabsTrigger value="tools" className="flex items-center gap-2">
@@ -555,6 +644,146 @@ export function SEOManagement() {
               Ayarları Kaydet
             </Button>
           </div>
+        </TabsContent>
+
+        <TabsContent value="cities" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold">Şehir SEO Yönetimi</h3>
+              <p className="text-muted-foreground">Şehir bazlı SEO sayfalarını yönetin</p>
+            </div>
+            <Button onClick={() => { setEditingCity(null); setCityDialogOpen(true); }}>
+              <Plus className="h-4 w-4 mr-2" />
+              Yeni Şehir Ekle
+            </Button>
+          </div>
+
+          {loadingCities ? (
+            <div className="flex items-center justify-center p-8">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {cities.map((city) => (
+                <Card key={city.id}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <MapPin className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <h4 className="font-medium">{city.name}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            /{city.slug}-itiraf • {city.post_count} gönderi
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <Badge variant={city.is_active ? "default" : "secondary"}>
+                          {city.is_active ? "Aktif" : "Pasif"}
+                        </Badge>
+                        
+                        <Switch
+                          checked={city.is_active}
+                          onCheckedChange={(checked) => toggleCityStatus(city.id, checked)}
+                        />
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setEditingCity(city);
+                            setCityDialogOpen(true);
+                          }}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.open(`/${city.slug}-itiraf`, '_blank')}
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    {city.is_active && (
+                      <div className="mt-3 pt-3 border-t space-y-2">
+                        <div className="text-sm">
+                          <strong>Title:</strong> {city.title || `${city.name} İtirafları | İtiraf Pazarı`}
+                        </div>
+                        <div className="text-sm">
+                          <strong>Description:</strong> {city.description || `${city.name}'dan anonim itiraflar...`}
+                        </div>
+                        <div className="text-sm">
+                          <strong>Keywords:</strong> {city.keywords || `${city.name} itiraf, ${city.name} hikaye`}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {/* Şehir Düzenleme Dialog */}
+          <Dialog open={cityDialogOpen} onOpenChange={setCityDialogOpen}>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingCity ? `${editingCity.name} SEO Ayarları` : 'Yeni Şehir SEO'}
+                </DialogTitle>
+              </DialogHeader>
+              
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>SEO Title</Label>
+                  <Input
+                    value={editingCity?.title || ''}
+                    onChange={(e) => setEditingCity(prev => prev ? { ...prev, title: e.target.value } : null)}
+                    placeholder={`${editingCity?.name || 'Şehir'} İtirafları | İtiraf Pazarı`}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Karakter: {(editingCity?.title || '').length}/60
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Meta Description</Label>
+                  <Textarea
+                    value={editingCity?.description || ''}
+                    onChange={(e) => setEditingCity(prev => prev ? { ...prev, description: e.target.value } : null)}
+                    placeholder={`${editingCity?.name || 'Şehir'}'dan anonim itiraflar. Gerçek hikayeler ve deneyimler.`}
+                    rows={3}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Karakter: {(editingCity?.description || '').length}/160
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Keywords</Label>
+                  <Input
+                    value={editingCity?.keywords || ''}
+                    onChange={(e) => setEditingCity(prev => prev ? { ...prev, keywords: e.target.value } : null)}
+                    placeholder={`${editingCity?.name || 'şehir'} itiraf, ${editingCity?.name || 'şehir'} hikaye, anonim paylaşım`}
+                  />
+                  <p className="text-xs text-muted-foreground">Virgülle ayırın</p>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setCityDialogOpen(false)}>
+                    İptal
+                  </Button>
+                  <Button onClick={() => editingCity && saveCityMeta(editingCity)}>
+                    Kaydet
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
 
         <TabsContent value="analysis" className="space-y-6">
