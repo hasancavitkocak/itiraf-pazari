@@ -71,6 +71,7 @@ export default function PostDetailPage() {
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [commentsLoading, setCommentsLoading] = useState(true);
   const [newComment, setNewComment] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
   const [userReaction, setUserReaction] = useState<'like' | 'dislike' | null>(null);
@@ -83,11 +84,24 @@ export default function PostDetailPage() {
   useEffect(() => {
     if (postId) {
       setLoading(true);
+      setCommentsLoading(true);
       setPost(null);
-      fetchPost();
-      fetchComments();
-      fetchUserReaction();
-      fetchNavigationPosts();
+      
+      // Post ve reaction'ı önce yükle (hızlı)
+      Promise.all([
+        fetchPost(),
+        fetchUserReaction()
+      ]).then(() => {
+        setLoading(false); // Post gösterilmeye hazır
+      });
+      
+      // Yorumlar ve navigation'ı paralel yükle (yavaş)
+      Promise.all([
+        fetchComments(),
+        fetchNavigationPosts()
+      ]).then(() => {
+        setCommentsLoading(false);
+      });
     }
   }, [postId]);
 
@@ -118,7 +132,7 @@ export default function PostDetailPage() {
       const comments = data.comments || [];
       setComments(comments);
 
-      // Yorum beğenilerini getir
+      // Yorum beğenilerini paralel getir
       if (comments.length > 0) {
         const commentIds = comments.map((c: Comment) => c.id).join(',');
         const { data: { session } } = await supabase.auth.getSession();
@@ -128,20 +142,18 @@ export default function PostDetailPage() {
           headers['Authorization'] = `Bearer ${session.access_token}`;
         }
 
-        try {
-          const likesResponse = await fetch(`/api/comment-likes?comment_ids=${commentIds}`, {
-            headers
+        // Paralel çağrı - await kullanmıyoruz
+        fetch(`/api/comment-likes?comment_ids=${commentIds}`, { headers })
+          .then(response => response.json())
+          .then(likesData => {
+            setCommentLikes(likesData.likes || {});
+          })
+          .catch(error => {
+            console.error('Error fetching comment likes:', error);
           });
-          const likesData = await likesResponse.json();
-          setCommentLikes(likesData.likes || {});
-        } catch (error) {
-          console.error('Error fetching comment likes:', error);
-        }
       }
     } catch (error) {
       console.error('Error fetching comments:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -168,19 +180,28 @@ export default function PostDetailPage() {
 
   const fetchNavigationPosts = async () => {
     try {
-      const response = await fetch(`/api/posts?limit=100`);
+      // Sadece navigation için gerekli olan post ID'lerini al
+      const response = await fetch(`/api/posts/navigation?current_id=${postId}`);
       const data = await response.json();
-      const posts = data.posts || [];
       
-      const currentIndex = posts.findIndex((p: Post) => p.id === postId);
-      if (currentIndex !== -1) {
-        // Önceki = daha yeni (index - 1)
-        setPrevPostId(currentIndex > 0 ? posts[currentIndex - 1].id : null);
-        // Sonraki = daha eski (index + 1)
-        setNextPostId(currentIndex < posts.length - 1 ? posts[currentIndex + 1].id : null);
-      }
+      setPrevPostId(data.prev_id || null);
+      setNextPostId(data.next_id || null);
     } catch (error) {
       console.error('Error fetching navigation posts:', error);
+      // Fallback: Eski yöntem
+      try {
+        const response = await fetch(`/api/posts?limit=20`);
+        const data = await response.json();
+        const posts = data.posts || [];
+        
+        const currentIndex = posts.findIndex((p: Post) => p.id === postId);
+        if (currentIndex !== -1) {
+          setPrevPostId(currentIndex > 0 ? posts[currentIndex - 1].id : null);
+          setNextPostId(currentIndex < posts.length - 1 ? posts[currentIndex + 1].id : null);
+        }
+      } catch (fallbackError) {
+        console.error('Fallback navigation fetch failed:', fallbackError);
+      }
     }
   };
 
@@ -457,20 +478,20 @@ export default function PostDetailPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => prevPostId && router.push(`/post/${prevPostId}`)}
-                disabled={!prevPostId}
+                disabled={commentsLoading || !prevPostId}
                 className="gap-1"
               >
                 <ChevronLeft className="h-4 w-4" />
-                Önceki
+                {commentsLoading ? '...' : 'Önceki'}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => nextPostId && router.push(`/post/${nextPostId}`)}
-                disabled={!nextPostId}
+                disabled={commentsLoading || !nextPostId}
                 className="gap-1"
               >
-                Sonraki
+                {commentsLoading ? '...' : 'Sonraki'}
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
@@ -628,7 +649,12 @@ export default function PostDetailPage() {
 
               {/* Comments List */}
               <div className="space-y-3">
-                {comments.length === 0 ? (
+                {commentsLoading ? (
+                  <div className="text-center py-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-2"></div>
+                    <p className="text-sm text-muted-foreground">Yorumlar yükleniyor...</p>
+                  </div>
+                ) : comments.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-4">Henüz yorum yok</p>
                 ) : (
                   comments.map((comment) => (

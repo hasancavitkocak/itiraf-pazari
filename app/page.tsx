@@ -266,6 +266,13 @@ function HomeContent() {
     const searchParam = searchParams.get('search');
     const sortParam = searchParams.get('sort');
     const periodParam = searchParams.get('period');
+    const postParam = searchParams.get('post');
+    
+    // Eğer post parametresi varsa, o gönderiyi göster
+    if (postParam) {
+      router.push(`/post/${postParam}`);
+      return;
+    }
     
     // Şehir parametresi
     if (cityParam) {
@@ -298,7 +305,7 @@ function HomeContent() {
     }
     
     setIsInitialized(true);
-  }, [searchParams, isInitialized]);
+  }, [searchParams, isInitialized, router]);
 
   // Filtreler değiştiğinde URL'yi güncelle (initialization sonrasında)
   useEffect(() => {
