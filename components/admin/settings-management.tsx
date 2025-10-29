@@ -26,17 +26,11 @@ export default function SettingsManagement() {
   const fetchSettings = async () => {
     try {
       const { adminFetch } = await import('@/lib/api-client');
-      const response = await adminFetch('/api/admin/settings');
-      if (response.ok) {
-        const data = await response.json();
-        setSettings(data);
-      } else {
-        const error = await response.json();
-        setMessage(error.error || 'Ayarlar yüklenirken hata oluştu.');
-      }
-    } catch (error) {
+      const data = await adminFetch('/api/admin/settings');
+      setSettings(data);
+    } catch (error: any) {
       console.error('Ayarlar yüklenirken hata:', error);
-      setMessage('Ayarlar yüklenirken hata oluştu.');
+      setMessage(error.message || 'Ayarlar yüklenirken hata oluştu.');
     } finally {
       setLoading(false);
     }
@@ -58,35 +52,30 @@ export default function SettingsManagement() {
 
     try {
       const { adminFetch } = await import('@/lib/api-client');
-      const response = await adminFetch('/api/admin/settings', {
+      const result = await adminFetch('/api/admin/settings', {
         method: 'POST',
-        body: JSON.stringify({ settings }),
+        body: { settings },
       });
 
-      if (response.ok) {
-        setMessage('Ayarlar başarıyla güncellendi!');
-        
-        // Header için cache'i güncelle
-        if (settings.site_logo?.value) {
-          localStorage.setItem('site_logo', settings.site_logo.value);
-        }
-        if (settings.site_name?.value) {
-          localStorage.setItem('site_name', settings.site_name.value);
-        }
-        
-        // Sayfayı yenile ki header güncellensin
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
-        
-        setTimeout(() => setMessage(''), 3000);
-      } else {
-        const error = await response.json();
-        setMessage(error.error || 'Ayarlar güncellenirken hata oluştu.');
+      setMessage('Ayarlar başarıyla güncellendi!');
+      
+      // Header için cache'i güncelle
+      if (settings.site_logo?.value) {
+        localStorage.setItem('site_logo', settings.site_logo.value);
       }
-    } catch (error) {
+      if (settings.site_name?.value) {
+        localStorage.setItem('site_name', settings.site_name.value);
+      }
+      
+      // Sayfayı yenile ki header güncellensin
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+      
+      setTimeout(() => setMessage(''), 3000);
+    } catch (error: any) {
       console.error('Ayarlar kaydedilirken hata:', error);
-      setMessage('Ayarlar kaydedilirken hata oluştu.');
+      setMessage(error.message || 'Ayarlar kaydedilirken hata oluştu.');
     } finally {
       setSaving(false);
     }

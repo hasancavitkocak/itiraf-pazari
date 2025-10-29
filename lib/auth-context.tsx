@@ -205,11 +205,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-    
-    // Çıkış sonrası ana sayfaya yönlendir
-    window.location.href = '/';
+    try {
+      // Local state'i hemen temizle
+      setUser(null);
+      setProfile(null);
+      
+      // Supabase'den çıkış yap
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Supabase signOut error:', error);
+        // Hata olsa bile devam et
+      }
+      
+      // Local storage'ı temizle
+      localStorage.clear();
+      
+      // Ana sayfaya yönlendir
+      window.location.href = '/';
+    } catch (error) {
+      console.error('SignOut error:', error);
+      // Hata olsa bile çıkış yap
+      setUser(null);
+      setProfile(null);
+      localStorage.clear();
+      window.location.href = '/';
+    }
   };
 
   return (

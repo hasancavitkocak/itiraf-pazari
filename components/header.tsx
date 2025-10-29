@@ -123,7 +123,15 @@ export function Header() {
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
-                    onClick={signOut}
+                    onClick={async () => {
+                      try {
+                        await signOut();
+                      } catch (error) {
+                        console.error('Çıkış yapılırken hata:', error);
+                        // Hata olsa bile çıkış yap
+                        window.location.href = '/';
+                      }
+                    }}
                     className="flex items-center gap-2 text-destructive focus:text-destructive"
                   >
                     <LogOut className="h-4 w-4" />
