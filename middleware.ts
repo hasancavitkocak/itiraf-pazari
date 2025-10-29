@@ -11,13 +11,16 @@ export function middleware(request: NextRequest) {
     const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : 'anonymous';
     const now = Date.now();
     const windowMs = 60 * 1000; // 1 dakika
-    const maxRequests = 100; // Dakikada max 100 istek
+    const maxRequests = 200; // Dakikada max 200 istek
 
     const key = `${ip}:${Math.floor(now / windowMs)}`;
     const requestCount = rateLimit.get(key) || 0;
 
     if (requestCount >= maxRequests) {
-      return new NextResponse('Too Many Requests', { status: 429 });
+      return NextResponse.json(
+        { error: 'Çok fazla istek. Lütfen daha sonra tekrar deneyin.' }, 
+        { status: 429 }
+      );
     }
 
     rateLimit.set(key, requestCount + 1);

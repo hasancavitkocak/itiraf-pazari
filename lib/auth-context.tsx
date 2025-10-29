@@ -38,14 +38,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async (userId: string) => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle();
+    try {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Fetching profile for user:', userId);
+      }
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
 
-    if (data) {
-      setProfile(data);
+      if (error) {
+        console.error('Profile fetch error:', error);
+        return;
+      }
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Profile data received:', data);
+      }
+      
+      if (data) {
+        setProfile(data);
+      } else {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('No profile data found for user:', userId);
+        }
+      }
+    } catch (error) {
+      console.error('Profile fetch error:', error);
     }
   };
 
@@ -104,10 +125,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Setting user:', session?.user?.id);
+      }
+      
       setUser(session?.user ?? null);
       if (session?.user) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Fetching profile for user after auth change:', session.user.id);
+        }
         await fetchProfile(session.user.id);
       } else {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('No user, clearing profile');
+        }
         setProfile(null);
       }
     });

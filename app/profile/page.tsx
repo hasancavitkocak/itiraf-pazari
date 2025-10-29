@@ -52,8 +52,10 @@ export default function ProfilePage() {
 
     // Auth loading tamamlandıktan sonra user yoksa yönlendir
     if (!user) {
-      router.push('/auth');
-      return;
+      const timer = setTimeout(() => {
+        router.push('/auth');
+      }, 0);
+      return () => clearTimeout(timer);
     }
 
     // Kullanıcının gönderilerini yükle
@@ -176,19 +178,33 @@ export default function ProfilePage() {
 
 
   // Auth loading durumunda loading göster
-  if (authLoading || (!user && !authLoading)) {
+  if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+            <p className="text-muted-foreground">Profil yükleniyor...</p>
+          </div>
+        </div>
+        <Footer />
       </div>
     );
   }
 
-  // User yok ve loading tamamlandıysa (zaten useEffect'te yönlendirme yapılacak)
+  // User yok ve loading tamamlandıysa yönlendir
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+            <p className="text-muted-foreground">Yönlendiriliyor...</p>
+          </div>
+        </div>
+        <Footer />
       </div>
     );
   }

@@ -18,6 +18,11 @@ import { GoogleAdSense } from '@/components/google-adsense';
 
 export function Header() {
   const { user, profile, signOut } = useAuth();
+  
+  // Debug log (development only)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Header render - user:', !!user, 'profile:', profile?.username);
+  }
   const [siteLogo, setSiteLogo] = useState<string>('');
   const [siteName, setSiteName] = useState<string>('İtiraf Pazarı');
   const [isLoading, setIsLoading] = useState(true);
@@ -57,8 +62,18 @@ export function Header() {
           href="/" 
           className="flex items-center"
           onClick={(e) => {
-            e.preventDefault();
-            window.location.href = '/';
+            // Sadece URL'de filtre parametreleri varsa tam yenileme yap
+            const hasFilters = window.location.search && 
+              (window.location.search.includes('city=') || 
+               window.location.search.includes('category=') || 
+               window.location.search.includes('district=') || 
+               window.location.search.includes('search='));
+            
+            if (hasFilters) {
+              e.preventDefault();
+              window.location.href = '/';
+            }
+            // Filtre yoksa normal Next.js navigation kullan (auth context korunur)
           }}
         >
           {!isLoading && siteLogo ? (
@@ -110,7 +125,7 @@ export function Header() {
                   <Button variant="ghost" size="sm" className="gap-2">
                     <User className="h-4 w-4" />
                     <span className="hidden sm:inline">
-                      {profile?.username || 'Profil'}
+                      {profile?.username || (user ? '...' : 'Profil')}
                     </span>
                   </Button>
                 </DropdownMenuTrigger>
