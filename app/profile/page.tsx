@@ -267,7 +267,11 @@ export default function ProfilePage() {
                   ) : (
                     <div className="space-y-3">
                       {posts.map((post) => (
-                        <Card key={post.id} className="p-4 hover:bg-accent/50 transition-colors">
+                        <Card 
+                          key={post.id} 
+                          className="p-4 hover:bg-accent/50 transition-colors cursor-pointer hover:shadow-md"
+                          onClick={() => router.push(`/post/${post.id}`)}
+                        >
                           <div className="space-y-2">
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex-1 min-w-0">
@@ -279,7 +283,7 @@ export default function ProfilePage() {
                                     </Badge>
                                   )}
                                 </div>
-                                <h3 className="font-semibold text-sm mb-1 truncate">{post.title}</h3>
+                                <h3 className="font-semibold text-sm mb-1 truncate hover:text-primary transition-colors">{post.title}</h3>
                                 <p className="text-sm text-muted-foreground line-clamp-2">{post.content}</p>
                               </div>
                             </div>
