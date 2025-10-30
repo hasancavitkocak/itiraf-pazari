@@ -1,14 +1,11 @@
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Home, Search, ArrowLeft, Heart } from 'lucide-react';
-import { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: '404 - Sayfa Bulunamadı | İtiraf Pazarı',
-  description: 'Aradığınız sayfa bulunamadı. İtiraf Pazarı\'nda binlerce anonim itiraf sizi bekliyor.',
-};
+import { useEffect } from 'react';
 
 export default function NotFound() {
   // Rastgele 404 mesajları
@@ -21,6 +18,11 @@ export default function NotFound() {
   ];
   
   const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+
+  // Client-side'da title ayarla
+  useEffect(() => {
+    document.title = '404 - Sayfa Bulunamadı | İtiraf Pazarı';
+  }, []);
   
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
