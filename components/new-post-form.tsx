@@ -233,7 +233,19 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
               <span className="text-sm">Kategoriler yükleniyor...</span>
             </div>
           ) : (
-            <Select value={categoryId} onValueChange={setCategoryId} disabled={loading}>
+            <Select 
+              value={categoryId} 
+              onValueChange={(value) => {
+                // Premium kategori kontrolü
+                const category = categories.find(c => c.id === value);
+                if (category?.is_premium && !user) {
+                  toast.error('Bu kategori için üye girişi yapmanız gerekmektedir');
+                  return;
+                }
+                setCategoryId(value);
+              }} 
+              disabled={loading}
+            >
               <SelectTrigger className="h-12">
                 <SelectValue placeholder="Hangi konuda?" />
               </SelectTrigger>
@@ -250,6 +262,7 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
                       <span>{category.icon && category.icon.length <= 2 ? category.icon : '📁'}</span>
                       <span>{category.name}</span>
                       {category.is_premium && <Lock className="h-3 w-3 text-amber-500" />}
+                      {category.is_premium && !user && <span className="text-xs text-muted-foreground">(Üyelik gerekli)</span>}
                     </div>
                   </SelectItem>
                 ))}
@@ -257,6 +270,26 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
             </Select>
           )}
         </div>
+
+        {/* Premium Kategori Uyarısı */}
+        {categoryId && categories.find(c => c.id === categoryId)?.is_premium && !user && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <div className="flex items-center gap-2 text-amber-800">
+              <Lock className="h-4 w-4" />
+              <span className="font-medium">Premium Kategori</span>
+            </div>
+            <p className="text-sm text-amber-700 mt-1">
+              Bu kategoriye itiraf paylaşmak için üye girişi yapmanız gerekmektedir. 
+              <button 
+                type="button"
+                onClick={() => window.location.href = '/auth'}
+                className="underline hover:no-underline ml-1"
+              >
+                Giriş yapmak için tıklayın.
+              </button>
+            </p>
+          </div>
+        )}
 
         {/* Konum Seçimi */}
         <div>
