@@ -35,6 +35,7 @@ interface Post {
   likes_count: number;
   dislikes_count: number;
   comments_count: number;
+  views_count?: number;
   is_boosted: boolean;
   created_at: string;
   author_id?: string;
@@ -81,6 +82,46 @@ export default function PostDetailPage() {
   const [nextPostId, setNextPostId] = useState<string | null>(null);
   const [prevPostId, setPrevPostId] = useState<string | null>(null);
 
+  // Görüntülenme sayısını artır (30 dakika cooldown ile) - Sadece direkt link için
+  const incrementViewCount = async (postId: string) => {
+    try {
+      const viewKey = `post_view_${postId}`;
+      const lastViewTime = localStorage.getItem(viewKey);
+      const now = Date.now();
+      const cooldownTime = 30 * 60 * 1000; // 30 dakika
+
+      // Eğer 30 dakika geçmemişse sayma
+      if (lastViewTime && (now - parseInt(lastViewTime)) < cooldownTime) {
+        return;
+      }
+
+      // Sadece direkt link ile gelenler için say (referrer kontrolü)
+      const referrer = document.referrer;
+      const currentDomain = window.location.origin;
+      
+      // Eğer aynı domain'den geliyorsa (anasayfadan tıklama) sayma
+      if (referrer.startsWith(currentDomain)) {
+        return;
+      }
+
+      // API'ye görüntülenme artırma isteği gönder
+      const response = await fetch(`/api/posts/${postId}/view`, {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        // Başarılıysa localStorage'a kaydet
+        localStorage.setItem(viewKey, now.toString());
+        
+        // Post state'ini güncelle (opsiyonel - UI'da hemen göstermek için)
+        setPost(prev => prev ? { ...prev, views_count: (prev.views_count || 0) + 1 } : prev);
+      }
+    } catch (error) {
+      console.error('View count increment failed:', error);
+      // Hata olsa bile devam et
+    }
+  };
+
   useEffect(() => {
     if (postId) {
       setLoading(true);
@@ -93,6 +134,9 @@ export default function PostDetailPage() {
         fetchUserReaction()
       ]).then(() => {
         setLoading(false); // Post gösterilmeye hazır
+        
+        // Görüntülenme sayısını artır (cooldown kontrolü ile)
+        incrementViewCount(postId);
       });
       
       // Yorumlar ve navigation'ı paralel yükle (yavaş)
@@ -586,6 +630,12 @@ export default function PostDetailPage() {
                     <MessageCircle className="h-4 w-4" />
                     <span className="font-medium">{(post.comments_count || 0).toLocaleString('tr-TR')}</span>
                   </Button>
+                  
+                  {/* Görüntülenme sayısı */}
+                  <div className="flex items-center gap-1.5 px-3 py-2 text-sm text-muted-foreground">
+                    <span>👁️</span>
+                    <span className="font-medium">{(post.views_count || 0).toLocaleString('tr-TR')}</span>
+                  </div>
                   
                   <Button
                     variant="ghost"

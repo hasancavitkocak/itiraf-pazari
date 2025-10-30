@@ -47,6 +47,7 @@ interface Post {
   likes_count?: number;
   dislikes_count?: number;
   comments_count?: number;
+  views_count?: number;
   is_boosted: boolean;
   created_at: string;
   author_id?: string;
@@ -661,6 +662,115 @@ function HomeContent() {
     }
   };
 
+  // Instagram tarzı görüntülenme - Post %50 görününce say
+  const handlePostView = async (postId: string) => {
+    // Cooldown kontrolü
+    const viewKey = `post_view_${postId}`;
+    const lastViewTime = localStorage.getItem(viewKey);
+    const now = Date.now();
+    const cooldownTime = 30 * 60 * 1000; // 30 dakika
+
+    // Eğer 30 dakika geçmemişse sayma
+    if (lastViewTime && (now - parseInt(lastViewTime)) < cooldownTime) {
+      return;
+    }
+
+    // Optimistic update - UI'da hemen +1 göster
+    setPosts(prevPosts =>
+      prevPosts.map(post =>
+        post.id === postId
+          ? { ...post, views_count: (post.views_count || 0) + 1 }
+          : post
+      )
+    );
+
+    try {
+      // API çağrısı yap
+      const response = await fetch(`/api/posts/${postId}/view`, {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        // Başarılıysa localStorage'a kaydet
+        localStorage.setItem(viewKey, now.toString());
+      } else {
+        // API başarısızsa optimistic update'i geri al
+        setPosts(prevPosts =>
+          prevPosts.map(post =>
+            post.id === postId
+              ? { ...post, views_count: Math.max(0, (post.views_count || 0) - 1) }
+              : post
+          )
+        );
+      }
+    } catch (error) {
+      console.error('View count update failed:', error);
+      // Hata durumunda optimistic update'i geri al
+      setPosts(prevPosts =>
+        prevPosts.map(post =>
+          post.id === postId
+            ? { ...post, views_count: Math.max(0, (post.views_count || 0) - 1) }
+            : post
+        )
+      );
+    }
+  };
+
+  // Post detayına git + görüntülenme sayımı (engagement)
+  const handlePostClick = async (postId: string) => {
+    // Detay tıklaması için ayrı cooldown kontrolü
+    const clickKey = `post_click_${postId}`;
+    const lastClickTime = localStorage.getItem(clickKey);
+    const now = Date.now();
+    const cooldownTime = 30 * 60 * 1000; // 30 dakika
+
+    // Cooldown geçmişse +1 ekle
+    if (!lastClickTime || (now - parseInt(lastClickTime)) >= cooldownTime) {
+      // Optimistic update - UI'da hemen +1 göster
+      setPosts(prevPosts =>
+        prevPosts.map(post =>
+          post.id === postId
+            ? { ...post, views_count: (post.views_count || 0) + 1 }
+            : post
+        )
+      );
+
+      try {
+        // API çağrısı yap
+        const response = await fetch(`/api/posts/${postId}/view`, {
+          method: 'POST',
+        });
+
+        if (response.ok) {
+          // Başarılıysa localStorage'a kaydet
+          localStorage.setItem(clickKey, now.toString());
+        } else {
+          // API başarısızsa optimistic update'i geri al
+          setPosts(prevPosts =>
+            prevPosts.map(post =>
+              post.id === postId
+                ? { ...post, views_count: Math.max(0, (post.views_count || 0) - 1) }
+                : post
+            )
+          );
+        }
+      } catch (error) {
+        console.error('Click view count update failed:', error);
+        // Hata durumunda optimistic update'i geri al
+        setPosts(prevPosts =>
+          prevPosts.map(post =>
+            post.id === postId
+              ? { ...post, views_count: Math.max(0, (post.views_count || 0) - 1) }
+              : post
+          )
+        );
+      }
+    }
+
+    // Navigate et
+    router.push(`/post/${postId}`);
+  };
+
   const handleSubmitReport = async () => {
     if (!reportReason.trim()) {
       toast.error('Lütfen bir neden belirtin');
@@ -1023,10 +1133,11 @@ function HomeContent() {
                   onComment={openCommentDialog}
                   onReport={openReportDialog}
                   onShare={handleShare}
+                  onView={handlePostView}
 
                   userReaction={userReactions[post.id]}
                   currentUserId={user?.id}
-                  onClick={() => router.push(`/post/${post.id}`)}
+                  onClick={() => handlePostClick(post.id)}
                 />
               ))}
             </div>

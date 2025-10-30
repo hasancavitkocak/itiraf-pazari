@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 interface PostCardProps {
   post: {
@@ -17,6 +17,7 @@ interface PostCardProps {
     likes_count?: number;
     dislikes_count?: number;
     comments_count?: number;
+    views_count?: number;
     is_boosted: boolean;
     created_at: string;
     author_id?: string;
@@ -39,6 +40,7 @@ interface PostCardProps {
   onComment: (postId: string) => void;
   onReport: (postId: string) => void;
   onShare: (postId: string) => void;
+  onView?: (postId: string) => void;
 
   userReaction?: 'like' | 'dislike' | null;
   currentUserId?: string;
@@ -52,11 +54,40 @@ export function PostCard({
   onComment,
   onShare,
   onReport,
+  onView,
   userReaction,
   currentUserId,
   onClick,
 }: PostCardProps) {
   const [showFullContent, setShowFullContent] = useState(false);
+  const [hasBeenViewed, setHasBeenViewed] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // Intersection Observer - Post %50 görününce sayım yap
+  useEffect(() => {
+    if (!cardRef.current || hasBeenViewed || !onView) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+            setHasBeenViewed(true);
+            onView(post.id);
+          }
+        });
+      },
+      {
+        threshold: 0.5, // %50 görünürlük
+        rootMargin: '0px'
+      }
+    );
+
+    observer.observe(cardRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [post.id, hasBeenViewed, onView]);
   const maxLength = 280;
   const needsTruncate = post.content.length > maxLength;
 
@@ -69,6 +100,7 @@ export function PostCard({
       transition={{ duration: 0.2 }}
     >
       <Card 
+        ref={cardRef}
         className={`p-4 sm:p-6 card-hover cursor-pointer ${post.is_boosted ? 'ring-2 ring-secondary' : ''}`}
         onClick={onClick}
       >
@@ -195,6 +227,12 @@ export function PostCard({
                 <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="font-medium">{(post.comments_count || 0).toLocaleString('tr-TR')}</span>
               </Button>
+              
+              {/* Görüntülenme sayısı */}
+              <div className="flex items-center gap-1 px-2 py-1 text-xs sm:text-sm text-muted-foreground">
+                <span>👁️</span>
+                <span className="font-medium">{(post.views_count || 0).toLocaleString('tr-TR')}</span>
+              </div>
             </div>
 
             <div className="flex gap-1">

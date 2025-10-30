@@ -33,6 +33,7 @@ export async function GET(
         likes_count,
         dislikes_count,
         comments_count,
+        views_count,
         is_boosted,
         author_id,
         is_hidden,
