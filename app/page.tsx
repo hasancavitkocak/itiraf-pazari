@@ -38,6 +38,7 @@ interface Category {
   slug: string;
   icon: string;
   is_premium: boolean;
+  is_active?: boolean;
 }
 
 interface Post {
@@ -996,7 +997,9 @@ function HomeContent() {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="all">Tüm Kategoriler</SelectItem>
-                              {categories.map((cat) => (
+                              {categories
+                                .filter(cat => cat.is_active !== false) // Sadece aktif kategorileri göster
+                                .map((cat) => (
                                 <SelectItem 
                                   key={cat.id} 
                                   value={cat.slug}

@@ -21,6 +21,12 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS birth_year int;
 -- Add gender column
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS gender text;
 
+-- Add is_active column (default true)
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS is_active boolean DEFAULT true;
+
+-- Add is_active column to categories table (default true)
+ALTER TABLE categories ADD COLUMN IF NOT EXISTS is_active boolean DEFAULT true;
+
 -- Create index for better performance
 CREATE INDEX IF NOT EXISTS idx_profiles_nickname ON profiles(nickname);
 CREATE INDEX IF NOT EXISTS idx_profiles_username ON profiles(username);

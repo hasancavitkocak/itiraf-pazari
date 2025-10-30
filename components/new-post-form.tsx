@@ -17,6 +17,7 @@ interface Category {
   slug: string;
   icon: string;
   is_premium: boolean;
+  is_active?: boolean;
 }
 
 interface City {
@@ -237,7 +238,9 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
                 <SelectValue placeholder="Hangi konuda?" />
               </SelectTrigger>
               <SelectContent>
-                {categories.map((category) => (
+                {categories
+                  .filter(category => category.is_active !== false) // Sadece aktif kategorileri göster
+                  .map((category) => (
                   <SelectItem 
                     key={category.id} 
                     value={category.id}
