@@ -62,8 +62,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Get recent posts for dynamic content
     const { data: posts } = await supabase
       .from('posts')
-      .select('id, updated_at')
-      .eq('is_visible', true)
+      .select('id, created_at')
+      .eq('is_hidden', false)
       .order('created_at', { ascending: false })
       .limit(100) // Son 100 post
 
@@ -78,7 +78,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Post pages (if you have individual post pages)
     const postPages: MetadataRoute.Sitemap = posts?.map(post => ({
       url: `${baseUrl}/post/${post.id}`,
-      lastModified: new Date(post.updated_at || new Date()),
+      lastModified: new Date(post.created_at || new Date()),
       changeFrequency: 'monthly' as const,
       priority: 0.6,
     })) || []
@@ -93,7 +93,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     // City filter pages - Ana sayfa şehir filtreleri
     const cityFilterPages: MetadataRoute.Sitemap = seoCities.map(city => ({
-      url: `${baseUrl}/?city=${city.id}`,
+      url: `${baseUrl}/?city=${city.slug}`,
       lastModified: new Date(),
       changeFrequency: 'daily' as const,
       priority: 0.8,
