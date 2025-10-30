@@ -17,7 +17,7 @@ import {
 import { GoogleAdSense } from '@/components/google-adsense';
 
 export function Header() {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, loading } = useAuth();
   
   // Debug log (development only)
   if (process.env.NODE_ENV === 'development') {
@@ -125,7 +125,7 @@ export function Header() {
                   <Button variant="ghost" size="sm" className="gap-2">
                     <User className="h-4 w-4" />
                     <span className="hidden sm:inline">
-                      {profile?.username || (user ? '...' : 'Profil')}
+                      {loading ? '...' : (profile?.username || 'Profil')}
                     </span>
                   </Button>
                 </DropdownMenuTrigger>

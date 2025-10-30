@@ -39,34 +39,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = async (userId: string) => {
     try {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Fetching profile for user:', userId);
-      }
+
       
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, username, nickname, role, is_premium, premium_expires_at, is_banned, created_at, birth_year, gender')
         .eq('id', userId)
         .maybeSingle();
 
       if (error) {
         console.error('Profile fetch error:', error);
+        // Hata olsa bile user'ı koru, sadece profile'ı temizle
+        setProfile(null);
         return;
       }
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Profile data received:', data);
-      }
-      
       if (data) {
         setProfile(data);
       } else {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('No profile data found for user:', userId);
-        }
+        setProfile(null);
       }
     } catch (error) {
       console.error('Profile fetch error:', error);
+      setProfile(null);
     }
   };
 
@@ -114,31 +109,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Auth state değişikliklerini dinle
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state change:', event, session?.user?.id);
-      
-      if (event === 'TOKEN_REFRESHED') {
-        console.log('Token refreshed successfully');
-      } else if (event === 'SIGNED_OUT') {
-        console.log('User signed out');
+      if (event === 'SIGNED_OUT') {
         setUser(null);
         setProfile(null);
         return;
       }
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Setting user:', session?.user?.id);
-      }
-      
       setUser(session?.user ?? null);
       if (session?.user) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('Fetching profile for user after auth change:', session.user.id);
-        }
         await fetchProfile(session.user.id);
       } else {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('No user, clearing profile');
-        }
         setProfile(null);
       }
     });
