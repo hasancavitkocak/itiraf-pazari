@@ -24,6 +24,7 @@ export function censorWord(word: string): string {
 
 // Beyaz liste - bu kelimeler filtrelenmeyecek (normal kelimeler)
 const whiteList = [
+  // "am" içeren normal kelimeler
   'akşam', 'akşamları', 'akşamleyin', 'akşamüstü',
   'islam', 'islami', 'islamiyet',
   'samsun', 'amsterdam', 'bambaşka',
@@ -32,7 +33,23 @@ const whiteList = [
   'tam', 'tamam', 'tamamen', 'tamami',
   'yam', 'yamyam', 'yamuk',
   'ham', 'hamam', 'hamur', 'hamsi',
-  'ama', 'amaç', 'amaçla', 'amaçlı', 'amaçsız'
+  'ama', 'amaç', 'amaçla', 'amaçlı', 'amaçsız',
+  'adam', 'madam', 'drama', 'kamera', 'drama',
+  'mamul', 'mamur', 'mamak', 'amca', 'amcam',
+  
+  // "kan" içeren normal kelimeler
+  'kanun', 'kanuni', 'kanaat', 'kanat', 'kanatları',
+  'kanser', 'kansız', 'kanıt', 'kanıtla', 'kanıtlar',
+  'kantar', 'kantarma', 'kanton', 'kanyon',
+  'hakan', 'okan', 'volkan', 'erkan', 'serkan',
+  'balkan', 'balkanlar', 'amerikan', 'meksikan',
+  'pekan', 'dekan', 'rekan', 'arkan',
+  'dukan', 'dükkan', 'lokanta', 'restoran',
+  'organ', 'organik', 'organizasyon',
+  
+  // "meme" içeren normal kelimeler  
+  'memento', 'memur', 'memurluk', 'memeli',
+  'memeliler', 'memleket', 'memleket'
 ];
 
 // Kelime tam olarak yasaklı kelime mi kontrol et
@@ -56,33 +73,45 @@ export function filterBadWords(text: string, badWords: BadWord[]): string {
   }
 
   let filteredText = text;
-  console.log('Filtering text:', text, 'with', badWords.length, 'bad words');
   
-  // Metni kelimelere ayır
-  const words = text.split(/(\s+|[.,!?;:])/);
+  // Metni kelimelere ayır - noktalama işaretlerini temizle
+  const words = text.split(/(\s+|[.,!?;:()[\]{}'"«»""''…–—])/);
   
   // Her kelimeyi kontrol et
   const filteredWords = words.map(word => {
     // Boşluk veya noktalama işareti ise olduğu gibi bırak
-    if (/^\s+$/.test(word) || /^[.,!?;:]+$/.test(word)) {
+    if (/^\s+$/.test(word) || /^[.,!?;:()[\]{}'"«»""''…–—]+$/.test(word)) {
+      return word;
+    }
+    
+    // Kelimenin başında ve sonundaki noktalama işaretlerini temizle
+    const cleanWordForCheck = word.replace(/^[.,!?;:()[\]{}'"«»""''…–—]+|[.,!?;:()[\]{}'"«»""''…–—]+$/g, '');
+    
+    // Eğer temizlendikten sonra boş kaldıysa orijinal kelimeyi döndür
+    if (!cleanWordForCheck) {
       return word;
     }
     
     // Yasaklı kelimelerle karşılaştır
     for (const badWord of badWords) {
-      if (isExactBadWord(word, badWord.word)) {
+      if (isExactBadWord(cleanWordForCheck, badWord.word)) {
         // Orijinal kelimenin case'ini koruyarak sansürle
         const censored = censorWord(badWord.word);
         
-        if (word === word.toUpperCase()) {
-          return censored.toUpperCase();
-        } else if (word === word.toLowerCase()) {
-          return censored.toLowerCase();
-        } else if (word.charAt(0) === word.charAt(0).toUpperCase()) {
-          return censored.charAt(0).toUpperCase() + censored.slice(1).toLowerCase();
-        } else {
-          return censored;
+        // Noktalama işaretlerini koruyarak değiştir
+        const prefix = word.match(/^[.,!?;:()[\]{}'"«»""''…–—]+/)?.[0] || '';
+        const suffix = word.match(/[.,!?;:()[\]{}'"«»""''…–—]+$/)?.[0] || '';
+        
+        let finalCensored = censored;
+        if (cleanWordForCheck === cleanWordForCheck.toUpperCase()) {
+          finalCensored = censored.toUpperCase();
+        } else if (cleanWordForCheck === cleanWordForCheck.toLowerCase()) {
+          finalCensored = censored.toLowerCase();
+        } else if (cleanWordForCheck.charAt(0) === cleanWordForCheck.charAt(0).toUpperCase()) {
+          finalCensored = censored.charAt(0).toUpperCase() + censored.slice(1).toLowerCase();
         }
+        
+        return prefix + finalCensored + suffix;
       }
     }
     
@@ -90,7 +119,6 @@ export function filterBadWords(text: string, badWords: BadWord[]): string {
   });
   
   filteredText = filteredWords.join('');
-  console.log('Filtered text:', filteredText);
   return filteredText;
 }
 

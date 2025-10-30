@@ -18,6 +18,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // İçerik uzunluk kontrolü
+    if (title.length > 100) {
+      return NextResponse.json(
+        { error: "Başlık en fazla 100 karakter olabilir" },
+        { status: 400 }
+      );
+    }
+
+    if (content.length > 2000) {
+      return NextResponse.json(
+        { error: "İtiraf içeriği en fazla 2000 karakter olabilir" },
+        { status: 400 }
+      );
+    }
+
     // Yasaklı kelimeleri al ve filtreleme yap
     const badWords = await getBadWords();
     const filteredTitle = filterBadWords(title, badWords);
