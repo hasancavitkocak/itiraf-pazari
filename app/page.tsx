@@ -253,6 +253,24 @@ function HomeContent() {
     fetchCategories();
     fetchCities();
     fetchSponsoredContent();
+    
+    // Logo tıklaması için event listener ekle
+    const handleLogoClick = () => {
+      // Filtreleri temizle
+      setSelectedCategory('all');
+      setSelectedCity('all');
+      setSelectedDistrict('all');
+      setSearchKeyword('');
+      setSortBy('newest');
+      setCurrentPage(1);
+      scrollToTop();
+    };
+    
+    window.addEventListener('clearFilters', handleLogoClick);
+    
+    return () => {
+      window.removeEventListener('clearFilters', handleLogoClick);
+    };
   }, []);
 
   // Şehir ID'sini bul (name'e göre)

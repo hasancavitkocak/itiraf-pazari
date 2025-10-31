@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +19,7 @@ import {
 export function Header() {
   const { user, profile, signOut } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   
   // Debug log (development only)
   if (process.env.NODE_ENV === 'development') {
@@ -64,9 +65,14 @@ export function Header() {
         <div 
           className="flex items-center cursor-pointer"
           onClick={() => {
-            // Logo'ya basınca ana sayfaya git (tüm filtreleri temizle)
-            // window.location.href kullanarak tam sayfa yenileme yap
-            window.location.href = '/';
+            // Eğer ana sayfadaysak filtreleri temizle
+            if (pathname === '/') {
+              // Custom event gönder
+              window.dispatchEvent(new CustomEvent('clearFilters'));
+            } else {
+              // Diğer sayfalardan ana sayfaya git
+              router.push('/');
+            }
           }}
         >
           {!isLoading && siteLogo ? (
