@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +17,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export function Header() {
-  const { user, profile, signOut, loading } = useAuth();
+  const { user, profile, signOut } = useAuth();
+  const router = useRouter();
   
   // Debug log (development only)
   if (process.env.NODE_ENV === 'development') {
@@ -50,6 +52,8 @@ export function Header() {
     fetchSiteSettings();
   }, []);
 
+
+
   return (
     <motion.header
       initial={{ y: -100 }}
@@ -57,22 +61,11 @@ export function Header() {
       className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-lg"
     >
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link 
-          href="/" 
-          className="flex items-center"
-          onClick={(e) => {
-            // Sadece URL'de filtre parametreleri varsa tam yenileme yap
-            const hasFilters = window.location.search && 
-              (window.location.search.includes('city=') || 
-               window.location.search.includes('category=') || 
-               window.location.search.includes('district=') || 
-               window.location.search.includes('search='));
-            
-            if (hasFilters) {
-              e.preventDefault();
-              window.location.href = '/';
-            }
-            // Filtre yoksa normal Next.js navigation kullan (auth context korunur)
+        <div 
+          className="flex items-center cursor-pointer"
+          onClick={() => {
+            // Logo'ya basınca district=all parametresiyle ana sayfaya git
+            router.push('/?district=all');
           }}
         >
           {!isLoading && siteLogo ? (
@@ -105,7 +98,7 @@ export function Header() {
             // Loading placeholder - boş alan bırak
             <div className="h-12 w-48"></div>
           )}
-        </Link>
+        </div>
 
         <div className="flex items-center gap-3">
           {user ? (
