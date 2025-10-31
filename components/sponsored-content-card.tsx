@@ -250,8 +250,8 @@ function SponsoredContentCardInner({ content }: InnerProps) {
               </div>
             </div>
 
-            <div className="text-xs text-muted-foreground">
-              {content.button_text}
+            <div className="text-xs font-medium text-primary hover:underline">
+              {content.button_text} →
             </div>
           </div>
         </div>
