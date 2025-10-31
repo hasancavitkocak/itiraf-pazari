@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: meta.title,
       description: meta.description,
-      url: `https://www.itirafsayfasi.com/${citySlug}-itiraf`,
+      url: `https://www.itirafpazari.com/${citySlug}-itiraf`,
       siteName: 'İtiraf Pazarı',
       locale: 'tr_TR',
       type: 'website',
@@ -58,7 +58,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: meta.description,
     },
     alternates: {
-      canonical: `https://www.itirafsayfasi.com/${citySlug}-itiraf`,
+      canonical: `https://www.itirafpazari.com/${citySlug}-itiraf`,
     },
   };
 }

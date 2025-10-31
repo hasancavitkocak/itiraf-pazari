@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Sıkça Sorulan Sorular | İtiraf Pazarı',
     description: 'İtiraf Pazarı hakkında merak ettiğiniz tüm soruların cevapları.',
-    url: 'https://www.itirafsayfasi.com/sss',
+    url: 'https://www.itirafpazari.com/sss',
   },
 };
 

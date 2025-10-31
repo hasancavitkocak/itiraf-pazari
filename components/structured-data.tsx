@@ -5,24 +5,24 @@ export function StructuredData() {
     "name": "İtiraf Pazarı",
     "alternateName": "Anonim İtiraf Sitesi",
     "description": "Türkiye'nin en güvenli anonim itiraf paylaşım platformu. Aşk, iş, okul ve kişisel itiraflarınızı kimliğinizi gizleyerek paylaşın.",
-    "url": "https://www.itirafsayfasi.com",
+    "url": "https://www.itirafpazari.com",
     "inLanguage": "tr-TR",
     "potentialAction": {
       "@type": "SearchAction",
-      "target": "https://www.itirafsayfasi.com/?search={search_term_string}",
+      "target": "https://www.itirafpazari.com/?search={search_term_string}",
       "query-input": "required name=search_term_string"
     },
     "publisher": {
       "@type": "Organization",
       "name": "İtiraf Pazarı",
-      "url": "https://www.itirafsayfasi.com",
+      "url": "https://www.itirafpazari.com",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://www.itirafsayfasi.com/logo.png"
+        "url": "https://www.itirafpazari.com/logo.png"
       }
     },
     "sameAs": [
-      "https://www.itirafsayfasi.com"
+      "https://www.itirafpazari.com"
     ]
   };
 
@@ -30,17 +30,17 @@ export function StructuredData() {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "İtiraf Pazarı",
-    "url": "https://www.itirafsayfasi.com",
-    "logo": "https://www.itirafsayfasi.com/logo.png",
+    "url": "https://www.itirafpazari.com",
+    "logo": "https://www.itirafpazari.com/logo.png",
     "description": "Türkiye'nin en güvenli anonim itiraf paylaşım platformu",
     "foundingDate": "2024",
     "contactPoint": {
       "@type": "ContactPoint",
       "contactType": "customer service",
-      "url": "https://www.itirafsayfasi.com/contact"
+      "url": "https://www.itirafpazari.com/contact"
     },
     "sameAs": [
-      "https://www.itirafsayfasi.com"
+      "https://www.itirafpazari.com"
     ]
   };
 
@@ -48,7 +48,7 @@ export function StructuredData() {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "name": "İtiraf Pazarı",
-    "url": "https://www.itirafsayfasi.com",
+    "url": "https://www.itirafpazari.com",
     "applicationCategory": "SocialNetworkingApplication",
     "operatingSystem": "Web Browser",
     "description": "Anonim itiraf paylaşım platformu",
@@ -76,7 +76,7 @@ export function StructuredData() {
         "@type": "ListItem",
         "position": 1,
         "name": "Ana Sayfa",
-        "item": "https://www.itirafsayfasi.com"
+        "item": "https://www.itirafpazari.com"
       }
     ]
   };

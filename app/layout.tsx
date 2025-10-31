@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     'anonim hikaye', 'itiraf sitesi', 'anonim platform', 'gizli paylaşım',
     'türkiye itiraf', 'anonim forum', 'gizli forum', 'itiraf et', 'anonim mesaj'
   ],
-  metadataBase: new URL('https://www.itirafsayfasi.com'),
+  metadataBase: new URL('https://www.itirafpazari.com'),
   authors: [{ name: 'İtiraf Pazarı', url: 'https://itirafpazari.com' }],
   creator: 'İtiraf Pazarı',
   publisher: 'İtiraf Pazarı',
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'İtiraf Pazarı - Anonim İtiraf Paylaşım Platformu',
     description: 'Türkiye\'nin en güvenli anonim itiraf platformu. Kayıt gerektirmez, tamamen ücretsiz.',
-    url: 'https://www.itirafsayfasi.com',
+    url: 'https://www.itirafpazari.com',
     siteName: 'İtiraf Pazarı',
     type: 'website',
     locale: 'tr_TR',
@@ -67,14 +67,14 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'İtiraf Pazarı - Anonim İtiraf Paylaşım Platformu',
     description: 'Türkiye\'nin en güvenli anonim itiraf platformu. Kayıt gerektirmez, tamamen ücretsiz.',
-    images: ['https://www.itirafsayfasi.com/og-image.jpg'],
+    images: ['https://www.itirafpazari.com/og-image.jpg'],
     creator: '@itirafpazari',
     site: '@itirafpazari',
   },
   alternates: {
-    canonical: 'https://www.itirafsayfasi.com',
+    canonical: 'https://www.itirafpazari.com',
     languages: {
-      'tr-TR': 'https://www.itirafsayfasi.com',
+      'tr-TR': 'https://www.itirafpazari.com',
     },
   },
   verification: {
