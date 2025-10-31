@@ -279,7 +279,12 @@ function HomeContent() {
 
   const handleCityClick = (cityName: string) => {
     const slug = getCitySlugByName(cityName);
-    window.location.href = `/?city=${slug}&district=all`;
+    setSelectedCity(slug);
+    setSelectedDistrict('all');
+    setSelectedCategory('all');
+    setSearchKeyword('');
+    // Sayfayı yukarı kaydır
+    scrollToTop();
   };
 
   // URL parametrelerinden filtreleri oku (sadece ilk yüklemede)

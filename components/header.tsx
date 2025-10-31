@@ -64,8 +64,9 @@ export function Header() {
         <div 
           className="flex items-center cursor-pointer"
           onClick={() => {
-            // Logo'ya basınca district=all parametresiyle ana sayfaya git
-            router.push('/?district=all');
+            // Logo'ya basınca ana sayfaya git (tüm filtreleri temizle)
+            // window.location.href kullanarak tam sayfa yenileme yap
+            window.location.href = '/';
           }}
         >
           {!isLoading && siteLogo ? (
