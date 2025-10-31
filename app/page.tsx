@@ -18,6 +18,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { SponsoredContentCard } from '@/components/sponsored-content-card';
 import {
   Dialog,
   DialogContent,
@@ -118,6 +119,7 @@ function HomeContent() {
   const [sortBy, setSortBy] = useState<'newest' | 'popular' | 'trending'>('newest');
   const [trendPeriod, setTrendPeriod] = useState<'24h' | '7d' | '30d'>('24h');
   const [commentLikes, setCommentLikes] = useState<Record<string, boolean>>({});
+  const [sponsoredContents, setSponsoredContents] = useState<any[]>([]);
 
 
   // Scroll to top function
@@ -226,9 +228,31 @@ function HomeContent() {
     }
   }, [currentPage, selectedCategory, selectedCity, selectedDistrict, searchKeyword, sortBy, trendPeriod, postsPerPage]);
 
+  const fetchSponsoredContent = async () => {
+    try {
+      // Hem top hem mixed pozisyonları için içerik çek
+      const [topResponse, mixedResponse] = await Promise.all([
+        fetch('/api/sponsored-content?position=top'),
+        fetch('/api/sponsored-content?position=mixed')
+      ]);
+      
+      const topData = await topResponse.json();
+      const mixedData = await mixedResponse.json();
+      
+      const contents = [];
+      if (topData.content) contents.push({ ...topData.content, position: 'top' });
+      if (mixedData.content) contents.push({ ...mixedData.content, position: 'mixed' });
+      
+      setSponsoredContents(contents);
+    } catch (error) {
+      console.error('Error fetching sponsored content:', error);
+    }
+  };
+
   useEffect(() => {
     fetchCategories();
     fetchCities();
+    fetchSponsoredContent();
   }, []);
 
   // Şehir ID'sini bul (name'e göre)
@@ -1127,21 +1151,32 @@ function HomeContent() {
             </div>
           ) : (
             <div className="space-y-4">
-              {posts.map((post) => (
-                <PostCard
-                  key={post.id}
-                  post={post}
-                  onLike={(id) => handleReaction(id, 'like')}
-                  onDislike={(id) => handleReaction(id, 'dislike')}
-                  onComment={openCommentDialog}
-                  onReport={openReportDialog}
-                  onShare={handleShare}
-                  onView={handlePostView}
-
-                  userReaction={userReactions[post.id]}
-                  currentUserId={user?.id}
-                  onClick={() => handlePostClick(post.id)}
-                />
+              {/* En üstte sponsorlu içerik varsa göster */}
+              {sponsoredContents.find(c => c.position === 'top') && (
+                <SponsoredContentCard position="top" />
+              )}
+              
+              {posts.map((post, index) => (
+                <div key={post.id}>
+                  <PostCard
+                    post={post}
+                    onLike={(id) => handleReaction(id, 'like')}
+                    onDislike={(id) => handleReaction(id, 'dislike')}
+                    onComment={openCommentDialog}
+                    onReport={openReportDialog}
+                    onShare={handleShare}
+                    onView={handlePostView}
+                    userReaction={userReactions[post.id]}
+                    currentUserId={user?.id}
+                    onClick={() => handlePostClick(post.id)}
+                  />
+                  {/* Her 5 gönderide bir mixed sponsorlu içerik göster */}
+                  {sponsoredContents.find(c => c.position === 'mixed') && (index + 1) % 5 === 0 && (
+                    <div className="mt-4">
+                      <SponsoredContentCard position="between_posts" />
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           )}

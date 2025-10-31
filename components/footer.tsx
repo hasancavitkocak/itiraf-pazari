@@ -2,7 +2,6 @@
 
 import { Heart } from 'lucide-react';
 import Link from 'next/link';
-import { GoogleAdSense } from '@/components/google-adsense';
 import { useEffect, useState } from 'react';
 
 interface City {
@@ -34,19 +33,6 @@ export function Footer() {
   };
   return (
     <footer className="bg-muted/50 border-t">
-      {/* Footer AdSense Banner */}
-      {process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_ID && (
-        <div className="border-b bg-background/95">
-          <div className="container mx-auto px-4 py-4">
-            <GoogleAdSense 
-              adSlot="0987654321" 
-              adFormat="auto"
-              className="max-h-32"
-            />
-          </div>
-        </div>
-      )}
-      
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>

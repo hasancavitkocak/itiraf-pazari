@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/header';
@@ -44,25 +44,7 @@ export default function ProfilePage() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  useEffect(() => {
-    // Auth loading tamamlanana kadar bekle
-    if (authLoading) {
-      return;
-    }
-
-    // Auth loading tamamlandıktan sonra user yoksa yönlendir
-    if (!user) {
-      const timer = setTimeout(() => {
-        router.push('/auth');
-      }, 0);
-      return () => clearTimeout(timer);
-    }
-
-    // Kullanıcının gönderilerini yükle
-    fetchUserPosts();
-  }, [user, profile, router, authLoading]);
-
-  const fetchUserPosts = async () => {
+  const fetchUserPosts = useCallback(async () => {
     if (!user) return;
 
     setPostsLoading(true);
@@ -98,9 +80,23 @@ export default function ProfilePage() {
     } finally {
       setPostsLoading(false);
     }
-  };
+  }, [user]);
 
+  useEffect(() => {
+    // Auth loading tamamlanana kadar bekle
+    if (authLoading) {
+      return;
+    }
 
+    // Auth loading tamamlandıktan sonra user yoksa yönlendir
+    if (!user) {
+      window.location.href = '/auth';
+      return;
+    }
+
+    // Kullanıcının gönderilerini yükle
+    fetchUserPosts();
+  }, [user, authLoading, fetchUserPosts]);
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();

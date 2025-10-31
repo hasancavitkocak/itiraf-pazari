@@ -11,7 +11,7 @@ import { PostsManagement } from '@/components/admin/posts-management';
 import { PaymentsManagement } from '@/components/admin/payments-management';
 import { AnalyticsDashboard } from '@/components/admin/analytics-dashboard';
 import { SEOManagement } from '@/components/admin/seo-management';
-import { AdsManagement } from '@/components/admin/ads-management';
+import { SponsoredContentManagement } from '@/components/admin/sponsored-content-management';
 import { PricingManagement } from '@/components/admin/pricing-management';
 import { ContactManagement } from '@/components/admin/contact-management';
 import { CategoriesManagement } from '@/components/admin/categories-management';
@@ -91,8 +91,8 @@ export default function AdminPage() {
               <TabsTrigger value="seo" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
                 🔍 SEO
               </TabsTrigger>
-              <TabsTrigger value="ads" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
-                📢 Reklamlar
+              <TabsTrigger value="sponsored" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
+                📢 Sponsorlu İçerik
               </TabsTrigger>
               <TabsTrigger value="settings" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
                 ⚙️ Ayarlar
@@ -141,8 +141,8 @@ export default function AdminPage() {
             <SEOManagement />
           </TabsContent>
 
-          <TabsContent value="ads">
-            <AdsManagement />
+          <TabsContent value="sponsored">
+            <SponsoredContentManagement />
           </TabsContent>
 
           <TabsContent value="settings">

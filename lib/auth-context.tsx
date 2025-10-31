@@ -39,8 +39,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = async (userId: string) => {
     try {
-
-      
       const { data, error } = await supabase
         .from('profiles')
         .select('id, username, nickname, login_username, display_username, email, role, is_premium, premium_expires_at, is_banned, created_at, birth_year, gender')
@@ -49,7 +47,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error('Profile fetch error:', error);
-        // Hata olsa bile user'ı koru, sadece profile'ı temizle
         setProfile(null);
         return;
       }
@@ -57,7 +54,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (data) {
         setProfile(data);
       } else {
-        setProfile(null);
+        // Profil yoksa oluştur
+        console.log('Profile not found, creating...');
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData.user) {
+          const username = userData.user.email?.split('@')[0] || 'user';
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert({
+              id: userId,
+              username: username,
+              email: userData.user.email,
+              role: 'user'
+            })
+            .select()
+            .single();
+
+          if (createError) {
+            console.error('Profile creation error:', createError);
+            setProfile(null);
+          } else {
+            setProfile(newProfile);
+          }
+        }
       }
     } catch (error) {
       console.error('Profile fetch error:', error);

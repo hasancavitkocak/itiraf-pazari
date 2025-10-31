@@ -14,7 +14,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { GoogleAdSense } from '@/components/google-adsense';
 
 export function Header() {
   const { user, profile, signOut, loading } = useAuth();
@@ -125,7 +124,7 @@ export function Header() {
                   <Button variant="ghost" size="sm" className="gap-2">
                     <User className="h-4 w-4" />
                     <span className="hidden sm:inline">
-                      {loading ? '...' : (profile?.username || 'Profil')}
+                      {profile?.display_username || profile?.nickname || user?.email?.split('@')[0] || 'Profil'}
                     </span>
                   </Button>
                 </DropdownMenuTrigger>
@@ -162,19 +161,6 @@ export function Header() {
           )}
         </div>
       </div>
-
-      {/* Header AdSense Banner */}
-      {process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_ID && (
-        <div className="border-b bg-background/95">
-          <div className="container mx-auto px-4 py-2">
-            <GoogleAdSense
-              adSlot="1234567890"
-              adFormat="auto"
-              className="max-h-24"
-            />
-          </div>
-        </div>
-      )}
     </motion.header>
   );
 }
