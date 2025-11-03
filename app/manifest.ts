@@ -2,6 +2,7 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
+    id: '/',
     name: 'İtiraf Pazarı - Anonim İtiraf Platformu',
     short_name: 'İtiraf Pazarı',
     description: 'Türkiye\'nin en güvenli anonim itiraf paylaşım platformu',
@@ -14,9 +15,16 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: 'tr',
     icons: [
       {
-        src: '/favicon.ico',
-        sizes: '48x48',
-        type: 'image/x-icon'
+        src: '/icon-192x192.png',
+        sizes: '192x192',
+        type: 'image/png',
+        purpose: 'maskable'
+      },
+      {
+        src: '/icon-512x512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'maskable'
       }
     ],
     shortcuts: [
