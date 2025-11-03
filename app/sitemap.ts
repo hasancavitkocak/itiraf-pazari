@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { seoCities } from '@/lib/cities-seo'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://www.itirafpazari.com'
+  const baseUrl = 'https://itirafpazari.com'
   
   // Supabase client
   const supabase = createClient(
