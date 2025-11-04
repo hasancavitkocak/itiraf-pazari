@@ -128,17 +128,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Auth state değişikliklerini dinle
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT') {
-        setUser(null);
-        setProfile(null);
-        return;
-      }
+      try {
+        if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+          if (event === 'SIGNED_OUT') {
+            setUser(null);
+            setProfile(null);
+            return;
+          }
+        }
 
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await fetchProfile(session.user.id);
-      } else {
-        setProfile(null);
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          await fetchProfile(session.user.id);
+        } else {
+          setProfile(null);
+        }
+      } catch (error) {
+        console.error('Auth state change error:', error);
+        // Refresh token hatası durumunda kullanıcıyı çıkış yap
+        if (error instanceof Error && error.message.includes('refresh_token_not_found')) {
+          await supabase.auth.signOut();
+          setUser(null);
+          setProfile(null);
+        }
       }
     });
 

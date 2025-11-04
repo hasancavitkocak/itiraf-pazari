@@ -28,6 +28,7 @@ export async function GET(
         category_id,
         city_id,
         district_id,
+        university_id,
         custom_location,
         created_at,
         likes_count,
@@ -39,7 +40,8 @@ export async function GET(
         is_hidden,
         categories(name, slug, icon),
         cities(name),
-        districts(name)
+        districts(name),
+        universities(name, slug)
       `)
       .eq('id', postId)
       .eq('is_hidden', false)

@@ -78,6 +78,12 @@ interface District {
   name: string;
 }
 
+interface University {
+  id: number;
+  name: string;
+  slug: string;
+}
+
 interface Comment {
   id: string;
   content: string;
@@ -101,8 +107,11 @@ function HomeContent() {
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [cities, setCities] = useState<City[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
+  const [universities, setUniversities] = useState<University[]>([]);
+  const [selectedUniversity, setSelectedUniversity] = useState<string | undefined>('all');
   const [citiesLoading, setCitiesLoading] = useState(false);
   const [districtsLoading, setDistrictsLoading] = useState(false);
+  const [universitiesLoading, setUniversitiesLoading] = useState(false);
   const [newPostDialogOpen, setNewPostDialogOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -177,6 +186,22 @@ function HomeContent() {
     }
   };
 
+  const fetchUniversities = async (citySlug?: string) => {
+    setUniversitiesLoading(true);
+    try {
+      const url = citySlug && citySlug !== 'all' 
+        ? `/api/universities?city_slug=${citySlug}`
+        : '/api/universities';
+      const response = await fetch(url);
+      const data = await response.json();
+      setUniversities(data.universities || []);
+    } catch (error) {
+      console.error('Error fetching universities:', error);
+    } finally {
+      setUniversitiesLoading(false);
+    }
+  };
+
   const fetchPosts = useCallback(async () => {
     setLoading(true);
     try {
@@ -195,6 +220,10 @@ function HomeContent() {
 
       if (selectedDistrict && selectedDistrict !== 'all') {
         params.append('district', selectedDistrict);
+      }
+
+      if (selectedUniversity && selectedUniversity !== 'all') {
+        params.append('university', selectedUniversity);
       }
 
       if (searchKeyword.trim()) {
@@ -226,7 +255,7 @@ function HomeContent() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, selectedCategory, selectedCity, selectedDistrict, searchKeyword, sortBy, trendPeriod, postsPerPage]);
+  }, [currentPage, selectedCategory, selectedCity, selectedDistrict, selectedUniversity, searchKeyword, sortBy, trendPeriod, postsPerPage]);
 
   const fetchSponsoredContent = async () => {
     try {
@@ -252,6 +281,7 @@ function HomeContent() {
   useEffect(() => {
     fetchCategories();
     fetchCities();
+    fetchUniversities();
     fetchSponsoredContent();
     
     // Logo tıklaması için event listener ekle
@@ -260,6 +290,7 @@ function HomeContent() {
       setSelectedCategory('all');
       setSelectedCity('all');
       setSelectedDistrict('all');
+      setSelectedUniversity('all');
       setSearchKeyword('');
       setSortBy('newest');
       setCurrentPage(1);
@@ -299,6 +330,7 @@ function HomeContent() {
     const slug = getCitySlugByName(cityName);
     setSelectedCity(slug);
     setSelectedDistrict('all');
+    setSelectedUniversity('all');
     setSelectedCategory('all');
     setSearchKeyword('');
     // Sayfayı yukarı kaydır
@@ -311,6 +343,7 @@ function HomeContent() {
     
     const cityParam = searchParams.get('city');
     const districtParam = searchParams.get('district');
+    const universityParam = searchParams.get('university');
     const categoryParam = searchParams.get('category');
     const searchParam = searchParams.get('search');
     const sortParam = searchParams.get('sort');
@@ -331,6 +364,11 @@ function HomeContent() {
     // İlçe parametresi
     if (districtParam) {
       setSelectedDistrict(districtParam);
+    }
+    
+    // Üniversite parametresi
+    if (universityParam) {
+      setSelectedUniversity(universityParam);
     }
     
     // Kategori parametresi
@@ -374,6 +412,10 @@ function HomeContent() {
       params.set('district', selectedDistrict);
     }
     
+    if (selectedUniversity && selectedUniversity !== 'all') {
+      params.set('university', selectedUniversity);
+    }
+    
     if (searchKeyword) {
       params.set('search', searchKeyword);
     }
@@ -390,19 +432,23 @@ function HomeContent() {
     
     // URL'yi güncelle (sayfa yenilenmeden)
     window.history.replaceState({}, '', newUrl);
-  }, [selectedCategory, selectedCity, selectedDistrict, searchKeyword, sortBy, trendPeriod, isInitialized]);
+  }, [selectedCategory, selectedCity, selectedDistrict, selectedUniversity, searchKeyword, sortBy, trendPeriod, isInitialized]);
 
   useEffect(() => {
     setCurrentPage(1); // Reset to first page when filters change
-  }, [selectedCategory, selectedCity, selectedDistrict, searchKeyword, sortBy, trendPeriod]);
+  }, [selectedCategory, selectedCity, selectedDistrict, selectedUniversity, searchKeyword, sortBy, trendPeriod]);
 
   useEffect(() => {
     if (selectedCity) {
       fetchDistricts(selectedCity);
+      fetchUniversities(selectedCity); // selectedCity zaten slug formatında
       setSelectedDistrict('all'); // Reset district when city changes
+      setSelectedUniversity('all'); // Reset university when city changes
     } else {
       setDistricts([]);
+      fetchUniversities(); // Load all universities
       setSelectedDistrict('all');
+      setSelectedUniversity('all');
     }
   }, [selectedCity]);
 
@@ -1017,7 +1063,7 @@ function HomeContent() {
                 </CollapsibleTrigger>
                 <CollapsibleContent className="mt-4">
                   <Card className="p-3 sm:p-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="category">Kategori</Label>
                         {categoriesLoading ? (
@@ -1054,7 +1100,7 @@ function HomeContent() {
                                 >
                                   <div className="flex items-center gap-2">
                                     <span>{cat.icon && cat.icon.length <= 2 ? cat.icon : '📁'}</span>
-                                    <span>{cat.name}</span>
+                                    <span>{cat.name?.trim()}</span>
                                     {cat.is_premium && <Lock className="h-3 w-3 text-secondary" />}
                                     {cat.is_premium && !user && <span className="text-xs text-muted-foreground">(Üyelik gerekli)</span>}
                                   </div>
@@ -1129,6 +1175,33 @@ function HomeContent() {
                       </div>
 
                       <div className="space-y-2">
+                        <Label htmlFor="universityFilter">Üniversite</Label>
+                        {universitiesLoading ? (
+                          <div className="flex items-center gap-2 p-2">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span className="text-sm text-muted-foreground">Yükleniyor...</span>
+                          </div>
+                        ) : (
+                          <Select 
+                            value={selectedUniversity} 
+                            onValueChange={setSelectedUniversity}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Üniversite seçin" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Tüm Üniversiteler</SelectItem>
+                              {universities.map((university) => (
+                                <SelectItem key={university.id} value={university.slug}>
+                                  {university.name?.trim()}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </div>
+
+                      <div className="space-y-2">
                         <Label>&nbsp;</Label>
                         <Button 
                           variant="outline" 
@@ -1136,6 +1209,7 @@ function HomeContent() {
                             setSelectedCategory('all');
                             setSelectedCity('all');
                             setSelectedDistrict('all');
+                            setSelectedUniversity('all');
                             setSearchKeyword('');
                           }}
                           className="w-full"

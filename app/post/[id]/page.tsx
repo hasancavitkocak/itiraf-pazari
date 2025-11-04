@@ -52,6 +52,10 @@ interface Post {
   districts?: {
     name: string;
   };
+  universities?: {
+    name: string;
+    slug: string;
+  };
 }
 
 interface Comment {
@@ -575,12 +579,16 @@ export default function PostDetailPage() {
                     {post.content}
                   </p>
                   
-                  {(post.custom_location || post.cities || post.districts) && (
+                  {(post.custom_location || post.cities || post.districts || post.universities) && (
                     <div className="flex items-center gap-2 mt-3 text-sm text-muted-foreground">
                       <span>📍</span>
                       <span>
-                        {post.custom_location || 
-                         `${post.cities?.name || ''}${post.districts?.name ? ` / ${post.districts.name}` : ''}`}
+                        {[
+                          post.cities?.name,
+                          post.districts?.name,
+                          post.universities?.name,
+                          post.custom_location
+                        ].filter(Boolean).join(', ')}
                       </span>
                     </div>
                   )}

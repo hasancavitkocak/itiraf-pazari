@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
     const body = await request.json();
-    const { title, content, categoryId, cityId, districtId, customLocation } = body;
+    const { title, content, categoryId, cityId, districtId, universityId, customLocation } = body;
 
     if (!title || !content || !categoryId) {
       return NextResponse.json(
@@ -61,6 +61,7 @@ export async function POST(request: NextRequest) {
         category_id: categoryId,
         city_id: cityId || null,
         district_id: districtId || null,
+        university_id: universityId || null,
         custom_location: filteredCustomLocation,
         author_ip_hash: authorHash,
         author_id: authorId,
@@ -85,6 +86,7 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category');
     const cityName = searchParams.get('city'); // Şehir adı kullanıyoruz
     const districtName = searchParams.get('district'); // İlçe adı kullanıyoruz
+    const universitySlug = searchParams.get('university'); // Üniversite slug'ı kullanıyoruz
     const search = searchParams.get('search');
     const sort = searchParams.get('sort') || 'newest';
     const page = parseInt(searchParams.get('page') || '1');
@@ -100,6 +102,7 @@ export async function GET(request: NextRequest) {
         category_id, 
         city_id,
         district_id,
+        university_id,
         custom_location,
         created_at, 
         likes_count, 
@@ -111,7 +114,8 @@ export async function GET(request: NextRequest) {
         is_hidden,
         categories(name, slug, icon),
         cities(name),
-        districts(name)
+        districts(name),
+        universities(name, slug)
       `)
       .eq('is_hidden', false)
       .range(offset, offset + limit - 1);
@@ -197,6 +201,20 @@ export async function GET(request: NextRequest) {
       if (districtData) {
         query = query.eq('district_id', districtData.id);
         countQuery = countQuery.eq('district_id', districtData.id);
+      }
+    }
+
+    // Üniversite filtresi - üniversite slug'ına göre
+    if (universitySlug && universitySlug !== 'all') {
+      const { data: universityData } = await supabase
+        .from('universities')
+        .select('id')
+        .eq('slug', universitySlug)
+        .single();
+
+      if (universityData) {
+        query = query.eq('university_id', universityData.id);
+        countQuery = countQuery.eq('university_id', universityData.id);
       }
     }
 

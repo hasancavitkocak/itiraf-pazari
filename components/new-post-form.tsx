@@ -30,6 +30,12 @@ interface District {
   name: string;
 }
 
+interface University {
+  id: number;
+  name: string;
+  slug: string;
+}
+
 interface NewPostFormProps {
   categories: Category[];
   categoriesLoading: boolean;
@@ -43,11 +49,14 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
   const [categoryId, setCategoryId] = useState('');
   const [cityId, setCityId] = useState<string | undefined>(undefined);
   const [districtId, setDistrictId] = useState<string | undefined>(undefined);
+  const [universityId, setUniversityId] = useState<string | undefined>(undefined);
   const [customLocation, setCustomLocation] = useState('');
   const [cities, setCities] = useState<City[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
+  const [universities, setUniversities] = useState<University[]>([]);
   const [citiesLoading, setCitiesLoading] = useState(false);
   const [districtsLoading, setDistrictsLoading] = useState(false);
+  const [universitiesLoading, setUniversitiesLoading] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // İlleri yükle
@@ -83,6 +92,22 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
     };
 
     fetchCities();
+    
+    // Üniversiteleri yükle
+    const fetchUniversities = async () => {
+      setUniversitiesLoading(true);
+      try {
+        const response = await fetch('/api/universities');
+        const data = await response.json();
+        setUniversities(data.universities || []);
+      } catch (error) {
+        console.error('Error fetching universities:', error);
+      } finally {
+        setUniversitiesLoading(false);
+      }
+    };
+
+    fetchUniversities();
   }, []);
 
   // İl değiştiğinde ilçeleri yükle
@@ -102,10 +127,63 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
       };
 
       fetchDistricts();
+      
+      // İl değiştiğinde o ile ait üniversiteleri yükle
+      const fetchUniversitiesByCity = async () => {
+        setUniversitiesLoading(true);
+        try {
+          const selectedCity = cities.find(c => c.id.toString() === cityId);
+          if (selectedCity) {
+            const citySlug = selectedCity.name
+              .replace(/İ/g, 'i')
+              .replace(/I/g, 'i')
+              .replace(/ı/g, 'i')
+              .replace(/Ğ/g, 'g')
+              .replace(/ğ/g, 'g')
+              .replace(/Ü/g, 'u')
+              .replace(/ü/g, 'u')
+              .replace(/Ş/g, 's')
+              .replace(/ş/g, 's')
+              .replace(/Ö/g, 'o')
+              .replace(/ö/g, 'o')
+              .replace(/Ç/g, 'c')
+              .replace(/ç/g, 'c')
+              .toLowerCase();
+            
+            const response = await fetch(`/api/universities?city_slug=${citySlug}`);
+            const data = await response.json();
+            setUniversities(data.universities || []);
+          }
+        } catch (error) {
+          console.error('Error fetching universities by city:', error);
+        } finally {
+          setUniversitiesLoading(false);
+        }
+      };
+      
+      fetchUniversitiesByCity();
       setDistrictId(undefined); // İl değiştiğinde ilçe seçimini sıfırla
+      setUniversityId(undefined); // İl değiştiğinde üniversite seçimini sıfırla
     } else {
       setDistricts([]);
       setDistrictId(undefined);
+      setUniversityId(undefined);
+      
+      // İl seçilmediğinde tüm üniversiteleri yükle
+      const fetchAllUniversities = async () => {
+        setUniversitiesLoading(true);
+        try {
+          const response = await fetch('/api/universities');
+          const data = await response.json();
+          setUniversities(data.universities || []);
+        } catch (error) {
+          console.error('Error fetching all universities:', error);
+        } finally {
+          setUniversitiesLoading(false);
+        }
+      };
+      
+      fetchAllUniversities();
     }
   }, [cityId]);
 
@@ -157,6 +235,7 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
           categoryId: categoryId,
           cityId: cityId || null,
           districtId: districtId || null,
+          universityId: universityId || null,
           customLocation: customLocation.trim() || null
         }),
       });
@@ -173,6 +252,7 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
       setCategoryId('');
       setCityId(undefined);
       setDistrictId(undefined);
+      setUniversityId(undefined);
       setCustomLocation('');
       onPostCreated();
     } catch (error: any) {
@@ -293,7 +373,7 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
 
         {/* Konum Seçimi */}
         <div>
-          <Label className="text-sm font-medium mb-2 block">📍 Konum</Label>
+          <Label className="text-sm font-medium mb-2 block">📍 Konum (opsiyonel)</Label>
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               {citiesLoading ? (
@@ -340,6 +420,34 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
                     </Select>
                   )}
                 </>
+              )}
+            </div>
+
+            {/* Üniversite Seçimi */}
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1 block">Üniversite (opsiyonel)</Label>
+              {universitiesLoading ? (
+                <div className="flex items-center gap-2 p-3 border rounded-lg">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="text-sm">Üniversiteler...</span>
+                </div>
+              ) : (
+                <Select 
+                  value={universityId} 
+                  onValueChange={setUniversityId} 
+                  disabled={loading}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Üniversite seçin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {universities.map((university) => (
+                      <SelectItem key={university.id} value={university.id.toString()}>
+                        {university.name?.trim()}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               )}
             </div>
 

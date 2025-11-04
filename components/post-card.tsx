@@ -34,6 +34,10 @@ interface PostCardProps {
     districts?: {
       name: string;
     };
+    universities?: {
+      name: string;
+      slug: string;
+    };
   };
   onLike: (postId: string) => void;
   onDislike: (postId: string) => void;
@@ -150,13 +154,14 @@ export function PostCard({
             </h3>
           )}
 
-          {(post.cities || post.districts || post.custom_location) && (
+          {(post.cities || post.districts || post.universities || post.custom_location) && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>📍</span>
               <span>
                 {[
                   post.cities?.name,
                   post.districts?.name,
+                  post.universities?.name,
                   post.custom_location
                 ].filter(Boolean).join(', ')}
               </span>
