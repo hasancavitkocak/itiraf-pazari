@@ -14,6 +14,8 @@ Modern, Apple tarzı tasarımlı, anonim itiraf paylaşım platformu.
 - ✅ Responsive Apple-style tasarım
 - ✅ Dark/Light tema
 - ✅ Framer Motion animasyonlar
+- ✅ PWA (Progressive Web App) desteği
+- ✅ Üniversite ve şehir bazlı filtreleme
 
 ### Premium Özellikler
 - ✅ Reklamsız deneyim
