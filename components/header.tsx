@@ -17,14 +17,22 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export function Header() {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, refreshProfile } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   
   // Debug log (development only)
   if (process.env.NODE_ENV === 'development') {
-    console.log('Header render - user:', !!user, 'profile:', profile?.username);
+    console.log('Header render - user:', !!user, 'profile:', profile?.username, 'role:', profile?.role);
   }
+
+  // Eğer user var ama profile yoksa refresh et
+  useEffect(() => {
+    if (user && !profile) {
+      console.log('User exists but no profile, refreshing...');
+      refreshProfile();
+    }
+  }, [user, profile, refreshProfile]);
   const [siteLogo, setSiteLogo] = useState<string>('');
   const [siteName, setSiteName] = useState<string>('İtiraf Pazarı');
   const [isLoading, setIsLoading] = useState(true);

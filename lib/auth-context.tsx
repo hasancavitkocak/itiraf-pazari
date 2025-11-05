@@ -37,8 +37,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = async (userId: string, retryCount = 0) => {
     try {
+      console.log('Fetching profile for user:', userId, 'retry:', retryCount); // Debug log
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('id, username, nickname, login_username, display_username, email, role, is_premium, premium_expires_at, is_banned, created_at, birth_year, gender')
@@ -47,11 +49,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error('Profile fetch error:', error);
+        
+        // Retry logic - bazen ilk seferde başarısız olabiliyor
+        if (retryCount < 3) {
+          console.log('Retrying profile fetch...', retryCount + 1);
+          setTimeout(() => fetchProfile(userId, retryCount + 1), 1000 * (retryCount + 1));
+          return;
+        }
+        
         setProfile(null);
         return;
       }
 
       if (data) {
+        console.log('Profile fetched successfully:', data.username, 'role:', data.role); // Debug log
         setProfile(data);
       } else {
         // Profil yoksa oluştur
@@ -74,19 +85,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.error('Profile creation error:', createError);
             setProfile(null);
           } else {
+            console.log('New profile created:', newProfile.username, 'role:', newProfile.role);
             setProfile(newProfile);
           }
         }
       }
     } catch (error) {
       console.error('Profile fetch error:', error);
+      
+      // Retry logic
+      if (retryCount < 3) {
+        console.log('Retrying profile fetch after error...', retryCount + 1);
+        setTimeout(() => fetchProfile(userId, retryCount + 1), 1000 * (retryCount + 1));
+        return;
+      }
+      
       setProfile(null);
     }
   };
 
   const refreshProfile = async () => {
     if (user) {
+      console.log('Refreshing profile for user:', user.id);
       await fetchProfile(user.id);
+    } else {
+      console.log('No user found for profile refresh');
     }
   };
 
@@ -96,27 +119,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // İlk session kontrolü
     const initializeAuth = async () => {
       try {
+        // Session'ı refresh etmeye çalış
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (!mounted) return;
 
         if (error) {
           console.error('Session error:', error);
-          // Refresh token hatası varsa oturumu temizle
+          // Refresh token hatası varsa localStorage'ı temizle ve çıkış yap
           if (error.message.includes('refresh_token_not_found') || 
-              error.message.includes('Invalid Refresh Token')) {
+              error.message.includes('Invalid Refresh Token') ||
+              error.message.includes('refresh_token_not_found')) {
+            localStorage.removeItem('supabase.auth.token');
             await supabase.auth.signOut();
             setUser(null);
             setProfile(null);
           }
+        } else if (session?.user) {
+          // Session varsa kullanıcıyı set et
+          setUser(session.user);
+          await fetchProfile(session.user.id);
         } else {
-          setUser(session?.user ?? null);
-          if (session?.user) {
-            await fetchProfile(session.user.id);
-          }
+          // Session yoksa kullanıcıyı null yap
+          setUser(null);
+          setProfile(null);
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
+        // Hata durumunda temizle
+        localStorage.removeItem('supabase.auth.token');
+        setUser(null);
+        setProfile(null);
       } finally {
         if (mounted) {
           setLoading(false);
@@ -129,14 +162,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Auth state değişikliklerini dinle
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       try {
-        if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
-          if (event === 'SIGNED_OUT') {
-            setUser(null);
-            setProfile(null);
-            return;
-          }
+
+        
+        if (event === 'SIGNED_OUT') {
+          localStorage.removeItem('supabase.auth.token');
+          setUser(null);
+          setProfile(null);
+          return;
         }
 
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          if (session?.user) {
+            setUser(session.user);
+            // Profile fetch'i biraz geciktir ki session tam olarak hazır olsun
+            setTimeout(() => fetchProfile(session.user.id), 500);
+          }
+          return;
+        }
+
+        // Diğer durumlar için session kontrolü
         setUser(session?.user ?? null);
         if (session?.user) {
           await fetchProfile(session.user.id);
@@ -145,12 +189,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         console.error('Auth state change error:', error);
-        // Refresh token hatası durumunda kullanıcıyı çıkış yap
-        if (error instanceof Error && error.message.includes('refresh_token_not_found')) {
-          await supabase.auth.signOut();
-          setUser(null);
-          setProfile(null);
-        }
+        // Hata durumunda temizle
+        localStorage.removeItem('supabase.auth.token');
+        setUser(null);
+        setProfile(null);
       }
     });
 
@@ -252,6 +294,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       setProfile(null);
       
+      // Supabase auth token'larını temizle
+      localStorage.removeItem('supabase.auth.token');
+      
       // Supabase'den çıkış yap
       const { error } = await supabase.auth.signOut();
       if (error) {
@@ -259,7 +304,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Hata olsa bile devam et
       }
       
-      // Local storage'ı temizle
+      // Tüm localStorage'ı temizle
       localStorage.clear();
       
       // Ana sayfaya yönlendir
