@@ -37,12 +37,13 @@ interface University {
 }
 
 interface NewPostFormProps {
-  categories: Category[];
-  categoriesLoading: boolean;
-  onPostCreated: () => void;
+  categories?: Category[];
+  categoriesLoading?: boolean;
+  onPostCreated?: () => void;
+  defaultCity?: string;
 }
 
-export function NewPostForm({ categories, categoriesLoading, onPostCreated }: NewPostFormProps) {
+export function NewPostForm({ categories = [], categoriesLoading = false, onPostCreated, defaultCity }: NewPostFormProps) {
   const { user } = useAuth();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -58,6 +59,16 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
   const [districtsLoading, setDistrictsLoading] = useState(false);
   const [universitiesLoading, setUniversitiesLoading] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Default city'yi set et
+  useEffect(() => {
+    if (defaultCity && cities.length > 0) {
+      const city = cities.find(c => c.name === defaultCity);
+      if (city) {
+        setCityId(city.id.toString());
+      }
+    }
+  }, [defaultCity, cities]);
 
   // İlleri yükle
   useEffect(() => {
@@ -254,7 +265,7 @@ export function NewPostForm({ categories, categoriesLoading, onPostCreated }: Ne
       setDistrictId(undefined);
       setUniversityId(undefined);
       setCustomLocation('');
-      onPostCreated();
+      onPostCreated?.();
     } catch (error: any) {
       console.error('Post creation error:', error);
       toast.error(error.message || 'Bir hata oluştu');

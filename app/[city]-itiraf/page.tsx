@@ -1,99 +1,87 @@
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { getCityBySlug, generateCityMeta, seoCities } from '@/lib/cities-seo';
-import { CityConfessionPage } from '@/components/city-confession-page';
+import { notFound, redirect } from 'next/navigation';
+import { seoCities } from '@/lib/cities-seo';
 
-interface Props {
-  params: Promise<{ city: string }>;
+interface CityPageProps {
+  params: {
+    city: string;
+  };
 }
 
-// Static paths generation for SEO
+// Generate static params for all cities
 export async function generateStaticParams() {
   return seoCities.map((city) => ({
     city: city.slug,
   }));
 }
 
-// Dynamic metadata generation
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { city: citySlug } = await params;
-  const city = getCityBySlug(citySlug);
+// Generate metadata for each city
+export async function generateMetadata({ params }: CityPageProps): Promise<Metadata> {
+  if (!params?.city) {
+    return {
+      title: 'Sayfa Bulunamadı | İtiraf Pazarı',
+    };
+  }
+  
+  const citySlug = params.city.replace('-itiraf', '');
+  const city = seoCities.find(c => c.slug === citySlug);
   
   if (!city) {
     return {
-      title: 'Sayfa Bulunamadı | İtiraf Pazarı'
+      title: 'Sayfa Bulunamadı | İtiraf Pazarı',
     };
   }
 
-  // Admin'den özel SEO ayarlarını al
-  let customMeta = null;
-  try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/admin/seo/cities/${city.id}`);
-    if (response.ok) {
-      const data = await response.json();
-      customMeta = data.settings;
-    }
-  } catch (error) {
-    console.error('Error fetching custom city meta:', error);
-  }
+  const title = `${city.name} İtiraf - Anonim ${city.name} İtirafları | İtiraf Pazarı`;
+  const description = `${city.name} şehrinden anonim itiraflar. ${city.name} üniversite, aşk, iş ve kişisel itiraflarını oku. Kimliğini gizleyerek sen de itirafını paylaş.`;
 
-  // Özel ayarlar varsa onları kullan, yoksa varsayılanları
-  const meta = customMeta || generateCityMeta(city.name);
-  
   return {
-    title: meta.title,
-    description: meta.description,
-    keywords: meta.keywords?.split(',') || generateCityMeta(city.name).keywords,
+    title,
+    description,
+    keywords: [
+      `${city.name} itiraf`,
+      `${city.name} anonim itiraf`,
+      `${city.name} üniversite itiraf`,
+      `${city.name} aşk itirafı`,
+      `${city.name} gizli itiraf`,
+      `${city.name} itiraf sitesi`,
+      `${city.name} hikaye`,
+      `${city.name} anonim hikaye`,
+      'anonim itiraf',
+      'gizli itiraf',
+      'itiraf et'
+    ],
     openGraph: {
-      title: meta.title,
-      description: meta.description,
-      url: `https://www.itirafpazari.com/${citySlug}-itiraf`,
-      siteName: 'İtiraf Pazarı',
-      locale: 'tr_TR',
+      title,
+      description,
+      url: `https://itirafpazari.com/${city.slug}-itiraf`,
       type: 'website',
+      locale: 'tr_TR',
+      siteName: 'İtiraf Pazarı',
     },
     twitter: {
       card: 'summary_large_image',
-      title: meta.title,
-      description: meta.description,
+      title,
+      description,
     },
     alternates: {
-      canonical: `https://www.itirafpazari.com/${citySlug}-itiraf`,
+      canonical: `https://itirafpazari.com/${city.slug}-itiraf`,
     },
   };
 }
 
-export default async function CityConfessionPageRoute({ params }: Props) {
-  const { city: citySlug } = await params;
-  const city = getCityBySlug(citySlug);
-
+export default async function CityPage({ params }: CityPageProps) {
+  if (!params?.city) {
+    notFound();
+  }
+  
+  const citySlug = params.city.replace('-itiraf', '');
+  const city = seoCities.find(c => c.slug === citySlug);
+  
   if (!city) {
     notFound();
   }
 
-  // Yönlendirme kontrolü
-  try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/admin/seo/cities/${city.id}`);
-    if (response.ok) {
-      const data = await response.json();
-      const settings = data.settings;
-      
-      // Eğer özel yönlendirme ayarlanmışsa
-      if (settings?.redirect_type && settings.redirect_type > 0 && settings.redirect_url) {
-        const { redirect } = await import('next/navigation');
-        
-        if (settings.redirect_type === 301) {
-          redirect(settings.redirect_url); // 301 kalıcı yönlendirme
-        } else if (settings.redirect_type === 302) {
-          redirect(settings.redirect_url); // 302 geçici yönlendirme
-        }
-      }
-    }
-  } catch (error) {
-    console.error('Redirect check error:', error);
-  }
-
-  // Varsayılan olarak ana sayfaya şehir filtresi ile yönlendir
-  const { redirect } = await import('next/navigation');
-  redirect(`/?city=${citySlug}&district=all`);
+  // Server-side redirect ile ana sayfaya yönlendir ve şehir filtresini uygula
+  redirect(`/?city=${encodeURIComponent(city.name)}`);
 }

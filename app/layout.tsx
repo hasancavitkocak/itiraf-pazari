@@ -18,10 +18,14 @@ export const metadata: Metadata = {
   },
   description: 'Türkiye\'nin en güvenli anonim itiraf platformu. Aşk, iş, okul ve kişisel itiraflarınızı kimliğinizi gizleyerek paylaşın. Kayıt gerektirmez, tamamen ücretsiz.',
   keywords: [
-    'itiraf', 'anonim itiraf', 'gizli itiraf', 'aşk itirafı', 'iş itirafı', 
-    'okul itirafı', 'anonim paylaşım', 'türkiye itiraf sitesi', 'gizli hikaye', 
-    'anonim hikaye', 'itiraf sitesi', 'anonim platform', 'gizli paylaşım',
-    'türkiye itiraf', 'anonim forum', 'gizli forum', 'itiraf et', 'anonim mesaj'
+    'anonim itiraf sitesi', 'itiraf sitesi', 'anonim itiraf', 'gizli itiraf', 
+    'itiraf et', 'anonim hikaye', 'gizli hikaye', 'türkiye itiraf sitesi',
+    'anonim paylaşım', 'itiraf platformu', 'anonim forum', 'gizli forum',
+    'aşk itirafı', 'üniversite itirafı', 'iş itirafı', 'okul itirafı',
+    'kişisel itiraf', 'anonim mesaj', 'gizli mesaj', 'itiraf oku',
+    'itiraf paylaş', 'anonim platform', 'gizli paylaşım', 'türkiye itiraf',
+    'istanbul itiraf', 'ankara itiraf', 'izmir itiraf', 'bursa itiraf',
+    'antalya itiraf', 'adana itiraf', 'konya itiraf', 'gaziantep itiraf'
   ],
   metadataBase: new URL('https://www.itirafpazari.com'),
   authors: [{ name: 'İtiraf Pazarı', url: 'https://itirafpazari.com' }],

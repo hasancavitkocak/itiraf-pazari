@@ -51,6 +51,17 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/blog" className="text-muted-foreground hover:text-foreground transition-colors">
+                  İtiraf Rehberi
+                </Link>
+              </li>
+              <li>
+                <Link href="/seo-landing" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Anonim İtiraf Nedir?
+                </Link>
+              </li>
+
+              <li>
                 <Link href="/sss" className="text-muted-foreground hover:text-foreground transition-colors">
                   SSS
                 </Link>
@@ -76,23 +87,29 @@ export function Footer() {
           <div>
             <h4 className="font-semibold mb-4">Şehir İtirafları</h4>
             <div className="grid grid-cols-2 gap-1 text-sm">
-              <Link href={`/?city=${getCityIdByName('İstanbul')}`} className="text-muted-foreground hover:text-foreground transition-colors">
-                İstanbul
+              <Link href="/?city=İstanbul" className="text-muted-foreground hover:text-foreground transition-colors">
+                İstanbul İtiraf
               </Link>
-              <Link href={`/?city=${getCityIdByName('Ankara')}`} className="text-muted-foreground hover:text-foreground transition-colors">
-                Ankara
+              <Link href="/?city=Ankara" className="text-muted-foreground hover:text-foreground transition-colors">
+                Ankara İtiraf
               </Link>
-              <Link href={`/?city=${getCityIdByName('İzmir')}`} className="text-muted-foreground hover:text-foreground transition-colors">
-                İzmir
+              <Link href="/?city=İzmir" className="text-muted-foreground hover:text-foreground transition-colors">
+                İzmir İtiraf
               </Link>
-              <Link href={`/?city=${getCityIdByName('Bursa')}`} className="text-muted-foreground hover:text-foreground transition-colors">
-                Bursa
+              <Link href="/?city=Bursa" className="text-muted-foreground hover:text-foreground transition-colors">
+                Bursa İtiraf
               </Link>
-              <Link href={`/?city=${getCityIdByName('Antalya')}`} className="text-muted-foreground hover:text-foreground transition-colors">
-                Antalya
+              <Link href="/?city=Antalya" className="text-muted-foreground hover:text-foreground transition-colors">
+                Antalya İtiraf
               </Link>
-              <Link href={`/?city=${getCityIdByName('Adana')}`} className="text-muted-foreground hover:text-foreground transition-colors">
-                Adana
+              <Link href="/?city=Adana" className="text-muted-foreground hover:text-foreground transition-colors">
+                Adana İtiraf
+              </Link>
+              <Link href="/?city=Konya" className="text-muted-foreground hover:text-foreground transition-colors">
+                Konya İtiraf
+              </Link>
+              <Link href="/?city=Gaziantep" className="text-muted-foreground hover:text-foreground transition-colors">
+                Gaziantep İtiraf
               </Link>
             </div>
             <div className="flex items-center gap-2 mt-4">

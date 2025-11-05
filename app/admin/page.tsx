@@ -17,6 +17,7 @@ import { ContactManagement } from '@/components/admin/contact-management';
 import { CategoriesManagement } from '@/components/admin/categories-management';
 import { BadWordsManagement } from '@/components/admin/bad-words-management';
 import { ReportsManagement } from '@/components/admin/reports-management';
+import { BlogManagement } from '@/components/admin/blog-management';
 import SettingsManagement from '@/components/admin/settings-management';
 import { Footer } from '@/components/footer';
 
@@ -72,6 +73,9 @@ export default function AdminPage() {
               <TabsTrigger value="categories" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
                 📂 Kategoriler
               </TabsTrigger>
+              <TabsTrigger value="blog" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
+                📰 Blog
+              </TabsTrigger>
               <TabsTrigger value="badwords" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
                 🚫 Yasaklı Kelimeler
               </TabsTrigger>
@@ -114,6 +118,10 @@ export default function AdminPage() {
 
           <TabsContent value="categories">
             <CategoriesManagement />
+          </TabsContent>
+
+          <TabsContent value="blog">
+            <BlogManagement />
           </TabsContent>
 
           <TabsContent value="badwords">

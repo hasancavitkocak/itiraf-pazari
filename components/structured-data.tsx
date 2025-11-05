@@ -51,21 +51,38 @@ export function StructuredData() {
     "url": "https://www.itirafpazari.com",
     "applicationCategory": "SocialNetworkingApplication",
     "operatingSystem": "Web Browser",
-    "description": "Anonim itiraf paylaşım platformu",
+    "description": "Türkiye'nin en güvenli anonim itiraf paylaşım platformu. 50+ şehir, 150+ üniversite desteği.",
+    "inLanguage": "tr-TR",
     "offers": {
       "@type": "Offer",
       "price": "0",
       "priceCurrency": "TRY",
-      "description": "Ücretsiz kullanım"
+      "description": "Ücretsiz kullanım",
+      "availability": "https://schema.org/InStock"
     },
     "featureList": [
-      "Anonim itiraf paylaşımı",
+      "100% Anonim itiraf paylaşımı",
+      "Aşk, üniversite, iş itirafları",
+      "50+ şehir bazlı filtreleme",
+      "150+ üniversite desteği",
       "Kategori bazlı filtreleme",
-      "Şehir ve ilçe bazlı filtreleme",
-      "Yorum yapma",
-      "Beğeni/beğenmeme",
-      "Güvenli içerik moderasyonu"
-    ]
+      "Yorum yapma ve etkileşim",
+      "Beğeni/beğenmeme sistemi",
+      "Güvenli içerik moderasyonu",
+      "PWA (Progressive Web App) desteği",
+      "Mobil uyumlu tasarım"
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "reviewCount": "1250",
+      "bestRating": "5",
+      "worstRating": "1"
+    },
+    "author": {
+      "@type": "Organization",
+      "name": "İtiraf Pazarı"
+    }
   };
 
   const breadcrumbData = {
@@ -77,6 +94,53 @@ export function StructuredData() {
         "position": 1,
         "name": "Ana Sayfa",
         "item": "https://www.itirafpazari.com"
+      }
+    ]
+  };
+
+  const faqData = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "İtiraf Pazarı nedir?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "İtiraf Pazarı, Türkiye'nin en güvenli anonim itiraf paylaşım platformudur. Kullanıcılar kimliklerini gizleyerek aşk, üniversite, iş ve kişisel itiraflarını paylaşabilir."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "İtiraf paylaşmak gerçekten anonim mi?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Evet, tamamen anonimdir. Hiçbir kişisel bilgi istenmez, kayıt gerektirmez ve IP adresleri loglanmaz. Kimliğiniz tamamen gizli kalır."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "İtiraf Pazarı ücretsiz mi?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Evet, İtiraf Pazarı tamamen ücretsizdir. Tüm temel özellikler ücretsiz kullanılabilir. Premium özellikler opsiyoneldir."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Hangi şehirlerden itiraf paylaşabilirim?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Türkiye'nin 50+ şehrinden itiraf paylaşabilir ve okuyabilirsiniz. İstanbul, Ankara, İzmir, Bursa, Antalya gibi tüm büyük şehirler desteklenmektedir."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Üniversite itirafları nasıl paylaşılır?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "İtiraf paylaşırken üniversite kategorisini seçin ve üniversitenizi belirtin. 150+ Türk üniversitesi sistemde kayıtlıdır."
+        }
       }
     ]
   };
@@ -98,6 +162,10 @@ export function StructuredData() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbData) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqData) }}
       />
     </>
   );

@@ -15,9 +15,7 @@ export default function robots(): MetadataRoute.Robots {
           '/profile',
           '/_next/',
           '/private/',
-          '*.json',
-          '/search?*',
-          '/filter?*'
+          '*.json'
         ],
         crawlDelay: 1,
       },

@@ -115,6 +115,16 @@ export function Header() {
           )}
         </div>
 
+        {/* Navigation Links */}
+        <nav className="hidden md:flex items-center gap-6">
+          <Link href="/blog" className="text-sm font-medium hover:text-primary transition-colors">
+            Blog
+          </Link>
+          <Link href="/seo-landing" className="text-sm font-medium hover:text-primary transition-colors">
+            Hakkında
+          </Link>
+        </nav>
+
         <div className="flex items-center gap-3">
           {user ? (
             <>
