@@ -103,12 +103,12 @@ function HomeContent() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedCity, setSelectedCity] = useState<string | undefined>('all');
-  const [selectedDistrict, setSelectedDistrict] = useState<string | undefined>('all');
+  const [selectedDistrict, setSelectedDistrict] = useState<string | undefined>(undefined);
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [cities, setCities] = useState<City[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
   const [universities, setUniversities] = useState<University[]>([]);
-  const [selectedUniversity, setSelectedUniversity] = useState<string | undefined>('all');
+  const [selectedUniversity, setSelectedUniversity] = useState<string | undefined>(undefined);
   const [citiesLoading, setCitiesLoading] = useState(false);
   const [districtsLoading, setDistrictsLoading] = useState(false);
   const [universitiesLoading, setUniversitiesLoading] = useState(false);
@@ -289,8 +289,8 @@ function HomeContent() {
       // Filtreleri temizle
       setSelectedCategory('all');
       setSelectedCity('all');
-      setSelectedDistrict('all');
-      setSelectedUniversity('all');
+      setSelectedDistrict(undefined);
+      setSelectedUniversity(undefined);
       setSearchKeyword('');
       setSortBy('newest');
       setCurrentPage(1);
@@ -329,8 +329,8 @@ function HomeContent() {
   const handleCityClick = (cityName: string) => {
     const slug = getCitySlugByName(cityName);
     setSelectedCity(slug);
-    setSelectedDistrict('all');
-    setSelectedUniversity('all');
+    setSelectedDistrict(undefined);
+    setSelectedUniversity(undefined);
     setSelectedCategory('all');
     setSearchKeyword('');
     // Sayfayı yukarı kaydır
@@ -362,12 +362,12 @@ function HomeContent() {
     }
     
     // İlçe parametresi
-    if (districtParam) {
+    if (districtParam && districtParam !== 'all') {
       setSelectedDistrict(districtParam);
     }
     
     // Üniversite parametresi
-    if (universityParam) {
+    if (universityParam && universityParam !== 'all') {
       setSelectedUniversity(universityParam);
     }
     
@@ -408,7 +408,7 @@ function HomeContent() {
       params.set('city', selectedCity);
     }
     
-    if (selectedDistrict) {
+    if (selectedDistrict && selectedDistrict !== 'all') {
       params.set('district', selectedDistrict);
     }
     
@@ -442,13 +442,13 @@ function HomeContent() {
     if (selectedCity) {
       fetchDistricts(selectedCity);
       fetchUniversities(selectedCity); // selectedCity zaten slug formatında
-      setSelectedDistrict('all'); // Reset district when city changes
-      setSelectedUniversity('all'); // Reset university when city changes
+      setSelectedDistrict(undefined); // Reset district when city changes
+      setSelectedUniversity(undefined); // Reset university when city changes
     } else {
       setDistricts([]);
       fetchUniversities(); // Load all universities
-      setSelectedDistrict('all');
-      setSelectedUniversity('all');
+      setSelectedDistrict(undefined);
+      setSelectedUniversity(undefined);
     }
   }, [selectedCity]);
 
@@ -1155,8 +1155,8 @@ function HomeContent() {
                           </div>
                         ) : (
                           <Select 
-                            value={selectedDistrict} 
-                            onValueChange={setSelectedDistrict}
+                            value={selectedDistrict || "all"} 
+                            onValueChange={(value) => setSelectedDistrict(value === "all" ? undefined : value)}
                             disabled={!selectedCity || districts.length === 0}
                           >
                             <SelectTrigger>
@@ -1183,8 +1183,8 @@ function HomeContent() {
                           </div>
                         ) : (
                           <Select 
-                            value={selectedUniversity} 
-                            onValueChange={setSelectedUniversity}
+                            value={selectedUniversity || "all"} 
+                            onValueChange={(value) => setSelectedUniversity(value === "all" ? undefined : value)}
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Üniversite seçin" />
@@ -1208,8 +1208,8 @@ function HomeContent() {
                           onClick={() => {
                             setSelectedCategory('all');
                             setSelectedCity('all');
-                            setSelectedDistrict('all');
-                            setSelectedUniversity('all');
+                            setSelectedDistrict(undefined);
+                            setSelectedUniversity(undefined);
                             setSearchKeyword('');
                           }}
                           className="w-full"
