@@ -2,7 +2,7 @@
 
 Modern, Apple tarzı tasarımlı, anonim itiraf paylaşım platformu. 🚀
 
-## Özellikler
+## Özellikler ✨
 
 ### Genel Özellikler
 - ✅ Anonim gönderi paylaşımı
