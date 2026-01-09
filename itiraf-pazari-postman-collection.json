@@ -1,0 +1,297 @@
+{
+  "info": {
+    "name": "İtiraf Pazarı API",
+    "description": "İtiraf Pazarı platformu için API collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://itirafpazari.com",
+      "type": "string"
+    },
+    {
+      "key": "local_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Posts",
+      "item": [
+        {
+          "name": "Yeni İtiraf Oluştur",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "description": "Opsiyonel - Kullanıcı girişi varsa"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Test İtirafı\",\n  \"content\": \"Bu bir test itirafıdır. Buraya itiraf içeriğinizi yazabilirsiniz.\",\n  \"categoryId\": \"1\",\n  \"cityId\": \"34\",\n  \"districtId\": null,\n  \"universityId\": null,\n  \"customLocation\": null\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/posts",
+              "host": ["{{base_url}}"],
+              "path": ["api", "posts"]
+            },
+            "description": "Yeni bir itiraf oluşturur. categoryId zorunludur."
+          },
+          "response": []
+        },
+        {
+          "name": "İtirafları Listele",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/posts?page=1&limit=10&sort=newest",
+              "host": ["{{base_url}}"],
+              "path": ["api", "posts"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "sort",
+                  "value": "newest",
+                  "description": "newest, popular, trending"
+                },
+                {
+                  "key": "category",
+                  "value": "ask",
+                  "disabled": true
+                },
+                {
+                  "key": "city",
+                  "value": "istanbul",
+                  "disabled": true
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "İtiraf Detayı",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/posts/{{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "posts", "{{post_id}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Kategorileri Listele",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/categories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "categories"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Cities & Districts",
+      "item": [
+        {
+          "name": "Şehirleri Listele",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/cities",
+              "host": ["{{base_url}}"],
+              "path": ["api", "cities"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "İlçeleri Listele",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/districts?city_id=34",
+              "host": ["{{base_url}}"],
+              "path": ["api", "districts"],
+              "query": [
+                {
+                  "key": "city_id",
+                  "value": "34"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "item": [
+        {
+          "name": "Yorum Ekle",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"post_id\": \"{{post_id}}\",\n  \"content\": \"Bu bir test yorumudur.\",\n  \"parent_id\": null\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/comments",
+              "host": ["{{base_url}}"],
+              "path": ["api", "comments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Yorumları Listele",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/comments?post_id={{post_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "comments"],
+              "query": [
+                {
+                  "key": "post_id",
+                  "value": "{{post_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Reactions",
+      "item": [
+        {
+          "name": "Beğeni/Beğenmeme Ekle",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"post_id\": \"{{post_id}}\",\n  \"reaction_type\": \"like\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/reactions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "reactions"]
+            },
+            "description": "reaction_type: 'like' veya 'dislike'"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Universities",
+      "item": [
+        {
+          "name": "Üniversiteleri Listele",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/universities",
+              "host": ["{{base_url}}"],
+              "path": ["api", "universities"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Contact",
+      "item": [
+        {
+          "name": "İletişim Formu Gönder",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subject\": \"Test Konusu\",\n  \"email\": \"test@example.com\",\n  \"message\": \"Bu bir test mesajıdır.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/contact",
+              "host": ["{{base_url}}"],
+              "path": ["api", "contact"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
