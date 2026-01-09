@@ -445,7 +445,7 @@ export function JobsManagement() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold">Otomatik İtiraf Sistemi</h2>
+          <h2 className="text-2xl font-bold">AI İtiraflar</h2>
           <p className="text-muted-foreground">Cron job'lar ve itiraf üretim sistemi yönetimi</p>
         </div>
         <div className="flex gap-2">
