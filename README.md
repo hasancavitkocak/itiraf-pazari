@@ -5,7 +5,7 @@ Modern, Apple tarzı tasarımlı, anonim itiraf paylaşım platformu. 🚀
 ## Özellikler ✨
 
 ### Genel Özellikler
-- ✅ Anonim gönderi paylaşımı.
+- ✅ Anonim gönderi paylaşımı..
 - ✅ Kategoriler: Aşk, İş, Okul, Arkadaşlık, Gizli (Premium)
 - ✅ Beğeni/Beğenmeme ve yorum sistemi
 - ✅ Gönderi bildirme (5 bildiri = otomatik gizleme)
