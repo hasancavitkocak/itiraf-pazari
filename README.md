@@ -1,6 +1,6 @@
 # Anonim İtiraf Pazarı
 
-Modern, Apple tarzı tasarımlı, anonim itiraf paylaşım platformu.
+Modern, Apple tarzı tasarımlı, anonim itiraf paylaşım platformu. 
 
 ## Özellikler
 
