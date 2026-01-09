@@ -18,6 +18,7 @@ import { CategoriesManagement } from '@/components/admin/categories-management';
 import { BadWordsManagement } from '@/components/admin/bad-words-management';
 import { ReportsManagement } from '@/components/admin/reports-management';
 import { BlogManagement } from '@/components/admin/blog-management';
+import { JobsManagement } from '@/components/admin/jobs-management';
 import SettingsManagement from '@/components/admin/settings-management';
 import { Footer } from '@/components/footer';
 
@@ -98,6 +99,9 @@ export default function AdminPage() {
               <TabsTrigger value="sponsored" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
                 📢 Sponsorlu İçerik
               </TabsTrigger>
+              <TabsTrigger value="jobs" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
+                🤖 Jobs
+              </TabsTrigger>
               <TabsTrigger value="settings" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
                 ⚙️ Ayarlar
               </TabsTrigger>
@@ -151,6 +155,10 @@ export default function AdminPage() {
 
           <TabsContent value="sponsored">
             <SponsoredContentManagement />
+          </TabsContent>
+
+          <TabsContent value="jobs">
+            <JobsManagement />
           </TabsContent>
 
           <TabsContent value="settings">

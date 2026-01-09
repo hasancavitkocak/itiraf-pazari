@@ -1,18 +1,44 @@
 {
-  "functions": {
-    "app/api/categories/route.ts": {
-      "maxDuration": 10
-    }
-  },
-  "headers": [
+  "crons": [
     {
-      "source": "/api/categories",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate"
-        }
-      ]
+      "path": "/api/cron/daily-confessions",
+      "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/daily-confessions", 
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/daily-confessions",
+      "schedule": "0 11 * * *"
+    },
+    {
+      "path": "/api/cron/daily-confessions",
+      "schedule": "0 13 * * *"
+    },
+    {
+      "path": "/api/cron/daily-confessions",
+      "schedule": "0 15 * * *"
+    },
+    {
+      "path": "/api/cron/daily-confessions",
+      "schedule": "0 17 * * *"
+    },
+    {
+      "path": "/api/cron/daily-confessions",
+      "schedule": "0 19 * * *"
+    },
+    {
+      "path": "/api/cron/daily-confessions",
+      "schedule": "0 21 * * *"
+    },
+    {
+      "path": "/api/cron/daily-confessions",
+      "schedule": "0 23 * * *"
+    },
+    {
+      "path": "/api/cron/daily-confessions",
+      "schedule": "0 1 * * *"
     }
   ]
 }
