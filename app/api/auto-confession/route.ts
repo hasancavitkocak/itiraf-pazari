@@ -34,28 +34,31 @@ export async function POST(request: NextRequest) {
     const randomCategory = categories[Math.floor(Math.random() * categories.length)];
     
     // Rastgele şehir seç - tüm şehirlerden
-    const { data: cities } = await supabase
+    const { data: cities, error: citiesError } = await supabase
       .from('cities')
-      .select('id, name')
-      .order('RANDOM()')  // PostgreSQL rastgele sıralama
-      .limit(50); // Daha fazla şehir seçeneği
+      .select('id, name');
+    
+    console.log('Cities fetched:', cities?.length, 'Error:', citiesError);
     
     let randomCity = null;
     let randomDistrict = null;
     
     if (cities && cities.length > 0) {
+      // JavaScript ile rastgele seçim
       randomCity = cities[Math.floor(Math.random() * cities.length)];
+      console.log('Selected city:', randomCity);
       
-      // Seçilen şehrin ilçelerini al - rastgele sırayla
-      const { data: districts } = await supabase
+      // Seçilen şehrin ilçelerini al
+      const { data: districts, error: districtsError } = await supabase
         .from('districts')
         .select('id, name')
-        .eq('city_id', randomCity.id)
-        .order('RANDOM()')  // PostgreSQL rastgele sıralama
-        .limit(15); // Daha fazla ilçe seçeneği
+        .eq('city_id', randomCity.id);
+      
+      console.log('Districts fetched:', districts?.length, 'Error:', districtsError);
       
       if (districts && districts.length > 0) {
         randomDistrict = districts[Math.floor(Math.random() * districts.length)];
+        console.log('Selected district:', randomDistrict);
       }
     }
     
