@@ -25,19 +25,20 @@ export async function POST(request: NextRequest) {
     const { data: categories } = await supabase
       .from('categories')
       .select('id, name')
-      .eq('is_active', true);
+      .order('order_index', { ascending: true });
     
     if (!categories || categories.length === 0) {
-      return NextResponse.json({ error: 'No active categories found' }, { status: 400 });
+      return NextResponse.json({ error: 'No categories found' }, { status: 400 });
     }
     
     const randomCategory = categories[Math.floor(Math.random() * categories.length)];
     
-    // Rastgele şehir seç
+    // Rastgele şehir seç - tüm şehirlerden
     const { data: cities } = await supabase
       .from('cities')
       .select('id, name')
-      .limit(20); // Popüler şehirlerden seç
+      .order('RANDOM()')  // PostgreSQL rastgele sıralama
+      .limit(50); // Daha fazla şehir seçeneği
     
     let randomCity = null;
     let randomDistrict = null;
@@ -45,12 +46,13 @@ export async function POST(request: NextRequest) {
     if (cities && cities.length > 0) {
       randomCity = cities[Math.floor(Math.random() * cities.length)];
       
-      // Seçilen şehrin ilçelerini al
+      // Seçilen şehrin ilçelerini al - rastgele sırayla
       const { data: districts } = await supabase
         .from('districts')
         .select('id, name')
         .eq('city_id', randomCity.id)
-        .limit(10);
+        .order('RANDOM()')  // PostgreSQL rastgele sıralama
+        .limit(15); // Daha fazla ilçe seçeneği
       
       if (districts && districts.length > 0) {
         randomDistrict = districts[Math.floor(Math.random() * districts.length)];

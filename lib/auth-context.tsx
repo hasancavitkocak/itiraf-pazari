@@ -102,9 +102,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (error) {
           console.error('Session error:', error);
-          // Refresh token hatası varsa oturumu temizle
+          // Sadece kritik hatalarda session'ı temizle
           if (error.message.includes('refresh_token_not_found') || 
-              error.message.includes('Invalid Refresh Token')) {
+              error.message.includes('Invalid Refresh Token') ||
+              error.message.includes('JWT expired')) {
+            console.log('Clearing invalid session');
             await supabase.auth.signOut();
             setUser(null);
             setProfile(null);
@@ -145,10 +147,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setProfile(null);
           }
         }
+
+        // Session expire durumunda otomatik refresh dene
+        if (event === 'TOKEN_REFRESHED' && !session) {
+          console.log('Token refresh failed, signing out');
+          setUser(null);
+          setProfile(null);
+        }
       } catch (error) {
         console.error('Auth state change error:', error);
-        // Refresh token hatası durumunda kullanıcıyı çıkış yap
-        if (error instanceof Error && error.message.includes('refresh_token_not_found')) {
+        // Sadece kritik hatalarda kullanıcıyı çıkış yap
+        if (error instanceof Error && 
+            (error.message.includes('refresh_token_not_found') ||
+             error.message.includes('JWT expired'))) {
+          console.log('Critical auth error, signing out');
           await supabase.auth.signOut();
           setUser(null);
           setProfile(null);
