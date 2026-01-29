@@ -24,15 +24,19 @@ export default function AuthPage() {
   const [siteLogo, setSiteLogo] = useState<string>('');
   const [siteName, setSiteName] = useState<string>('İtiraf Pazarı');
   const [isLoading, setIsLoading] = useState(true);
-  const { user, loading: authLoading, signIn, signUp } = useAuth();
+  const { user, profile, loading: authLoading, signIn, signUp } = useAuth();
   const router = useRouter();
 
   // Kullanıcı zaten giriş yapmışsa ana sayfaya yönlendir
   useEffect(() => {
-    if (!authLoading && user) {
-      router.push('/');
+    if (!authLoading && user && profile) {
+      if (profile.role === 'admin') {
+        router.push('/admin');
+      } else {
+        router.push('/');
+      }
     }
-  }, [user, authLoading, router]);
+  }, [user, profile, authLoading, router]);
 
   useEffect(() => {
     // Site ayarlarını yükle
@@ -65,7 +69,8 @@ export default function AuthPage() {
     try {
       await signIn(nickname, password);
       toast.success('Giriş başarılı!');
-      router.push('/');
+      // Yönlendirme useEffect'te yapılacak
+      
     } catch (error: any) {
       toast.error(error.message || 'Giriş yapılamadı');
     } finally {

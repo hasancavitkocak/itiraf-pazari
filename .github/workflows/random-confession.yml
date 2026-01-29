@@ -1,0 +1,34 @@
+name: Random Confession Generator
+
+on:
+  schedule:
+    # Günde 15 kez rastgele saatlerde çalışır
+    - cron: '7 0 * * *'    # 00:07
+    - cron: '23 1 * * *'   # 01:23
+    - cron: '45 2 * * *'   # 02:45
+    - cron: '12 4 * * *'   # 04:12
+    - cron: '38 5 * * *'   # 05:38
+    - cron: '56 6 * * *'   # 06:56
+    - cron: '19 8 * * *'   # 08:19
+    - cron: '41 9 * * *'   # 09:41
+    - cron: '3 11 * * *'   # 11:03
+    - cron: '27 12 * * *'  # 12:27
+    - cron: '52 13 * * *'  # 13:52
+    - cron: '14 15 * * *'  # 15:14
+    - cron: '36 16 * * *'  # 16:36
+    - cron: '58 17 * * *'  # 17:58
+    - cron: '21 19 * * *'  # 19:21
+    - cron: '44 20 * * *'  # 20:44
+    - cron: '9 22 * * *'   # 22:09
+    - cron: '33 23 * * *'  # 23:33
+  workflow_dispatch: # Manuel tetikleme için
+
+jobs:
+  generate-confession:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Random Confession
+        run: |
+          curl -X POST "${{ secrets.VERCEL_APP_URL }}/api/auto-confession" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"

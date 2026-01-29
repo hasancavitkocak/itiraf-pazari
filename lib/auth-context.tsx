@@ -129,19 +129,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Auth state değişikliklerini dinle
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       try {
-        if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
-          if (event === 'SIGNED_OUT') {
-            setUser(null);
-            setProfile(null);
-            return;
-          }
+        console.log('Auth state change:', event, !!session);
+        
+        if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setProfile(null);
+          return;
         }
 
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          await fetchProfile(session.user.id);
-        } else {
-          setProfile(null);
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          setUser(session?.user ?? null);
+          if (session?.user) {
+            await fetchProfile(session.user.id);
+          } else {
+            setProfile(null);
+          }
         }
       } catch (error) {
         console.error('Auth state change error:', error);
@@ -164,7 +166,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Nickname'den email'e çevir
     const email = `${nickname}@anonymous.local`;
     
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -180,6 +182,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         throw new Error('Giriş yapılamadı. Lütfen tekrar deneyin');
       }
+    }
+
+    // Başarılı giriş sonrası profili hemen yükle ve bekle
+    if (data.user) {
+      setUser(data.user);
+      await fetchProfile(data.user.id);
+      
+      // Profil yüklendikten sonra kısa bir bekleme
+      await new Promise(resolve => setTimeout(resolve, 100));
     }
   };
 

@@ -18,6 +18,7 @@ import { CategoriesManagement } from '@/components/admin/categories-management';
 import { BadWordsManagement } from '@/components/admin/bad-words-management';
 import { ReportsManagement } from '@/components/admin/reports-management';
 import SettingsManagement from '@/components/admin/settings-management';
+import { JobsManagement } from '@/components/admin/jobs-management';
 import { Footer } from '@/components/footer';
 
 export default function AdminPage() {
@@ -31,8 +32,16 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!loading && mounted) {
-      if (!profile || profile.role !== 'admin') {
+      if (!profile) {
+        // Profil yok, ana sayfaya yönlendir
         router.push('/');
+        return;
+      }
+      
+      if (profile.role !== 'admin') {
+        // Admin değil, ana sayfaya yönlendir
+        router.push('/');
+        return;
       }
     }
   }, [profile, loading, mounted, router]);
@@ -41,12 +50,38 @@ export default function AdminPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2">Yükleniyor...</span>
       </div>
     );
   }
 
-  if (!profile || profile.role !== 'admin') {
-    return null;
+  // Debug log
+  console.log('Admin page render:', { 
+    profile: profile ? { role: profile.role, nickname: profile.nickname } : null,
+    loading,
+    mounted 
+  });
+
+  if (!profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p>Profil yükleniyor...</p>
+          <p className="text-sm text-gray-500 mt-2">Eğer bu mesaj devam ederse, çıkış yapıp tekrar giriş yapın.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (profile.role !== 'admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p>Bu sayfaya erişim yetkiniz yok.</p>
+          <p className="text-sm text-gray-500 mt-2">Role: {profile.role}</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -96,6 +131,9 @@ export default function AdminPage() {
               </TabsTrigger>
               <TabsTrigger value="settings" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
                 ⚙️ Ayarlar
+              </TabsTrigger>
+              <TabsTrigger value="jobs" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
+                🤖 Jobs
               </TabsTrigger>
             </TabsList>
           </div>
@@ -147,6 +185,10 @@ export default function AdminPage() {
 
           <TabsContent value="settings">
             <SettingsManagement />
+          </TabsContent>
+
+          <TabsContent value="jobs">
+            <JobsManagement />
           </TabsContent>
         </Tabs>
       </main>
