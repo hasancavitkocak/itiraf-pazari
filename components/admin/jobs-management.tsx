@@ -190,16 +190,17 @@ export function JobsManagement() {
         <CardContent>
           <div className="space-y-3">
             <p className="text-sm text-gray-600">
-              Otomatik itiraf oluşturma - Her gün farklı saatlerde:
+              Otomatik itiraf oluşturma - Günde 30+ kez:
             </p>
-            <div className="grid grid-cols-3 gap-2">
-              <Badge variant="outline">Her 73 dakika</Badge>
-              <Badge variant="outline">Her 97 dakika</Badge>
-              <Badge variant="outline">Her 127 dakika</Badge>
+            <div className="grid grid-cols-2 gap-2">
+              <Badge variant="outline">Her 2 saatte (13. dk)</Badge>
+              <Badge variant="outline">Her 3 saatte (37. dk)</Badge>
+              <Badge variant="outline">Her 4 saatte (51. dk)</Badge>
+              <Badge variant="outline">6 sabit saat (07, 23, 41)</Badge>
             </div>
             <div className="text-xs text-gray-500 space-y-1">
-              <p>• Günde 40+ kez otomatik itiraf oluşturulur</p>
-              <p>• Her gün farklı saatlerde çalışır</p>
+              <p>• Günde 30+ kez otomatik itiraf oluşturulur</p>
+              <p>• Farklı zaman aralıklarında çalışır</p>
               <p>• Vercel Pro gerektirmez, tamamen ücretsiz</p>
               <p>• AI destekli gerçekçi itiraflar + rastgele konum</p>
             </div>

@@ -2,10 +2,13 @@ name: Random Confession Generator
 
 on:
   schedule:
-    # Her gün farklı saatlerde çalışır - GitHub Actions her gün bu saatleri otomatik değiştirir
-    - cron: '*/73 * * * *'   # Her 73 dakikada bir (günde ~20 kez, farklı saatlerde)
-    - cron: '*/97 * * * *'   # Her 97 dakikada bir (günde ~15 kez, farklı saatlerde)
-    - cron: '*/127 * * * *'  # Her 127 dakikada bir (günde ~11 kez, farklı saatlerde)
+    # Her gün farklı saatlerde çalışır - rastgele dağılım
+    - cron: '13 */2 * * *'   # Her 2 saatte bir, 13. dakikada
+    - cron: '37 */3 * * *'   # Her 3 saatte bir, 37. dakikada  
+    - cron: '51 */4 * * *'   # Her 4 saatte bir, 51. dakikada
+    - cron: '7 1,5,9,13,17,21 * * *'    # Günde 6 kez: 01:07, 05:07, 09:07, 13:07, 17:07, 21:07
+    - cron: '23 2,6,10,14,18,22 * * *'  # Günde 6 kez: 02:23, 06:23, 10:23, 14:23, 18:23, 22:23
+    - cron: '41 3,7,11,15,19,23 * * *'  # Günde 6 kez: 03:41, 07:41, 11:41, 15:41, 19:41, 23:41
   workflow_dispatch: # Manuel tetikleme için
 
 jobs:
