@@ -184,17 +184,15 @@ export default function JobsPage() {
         <CardContent>
           <div className="space-y-2">
             <p className="text-sm text-gray-600">
-              GitHub Actions ile otomatik itiraf oluşturma saatleri:
+              GitHub Actions ile otomatik itiraf oluşturma - Her gün farklı saatlerde:
             </p>
             <div className="flex flex-wrap gap-2">
-              <Badge variant="outline">07:23</Badge>
-              <Badge variant="outline">11:47</Badge>
-              <Badge variant="outline">15:12</Badge>
-              <Badge variant="outline">18:38</Badge>
-              <Badge variant="outline">21:55</Badge>
+              <Badge variant="outline">Her 73 dk</Badge>
+              <Badge variant="outline">Her 97 dk</Badge>
+              <Badge variant="outline">Her 127 dk</Badge>
             </div>
             <p className="text-xs text-gray-500 mt-2">
-              Bu saatler GitHub Actions tarafından otomatik olarak tetiklenir.
+              Bu sistem her gün farklı saatlerde otomatik itiraf oluşturur (günde ~40+ kez).
             </p>
           </div>
         </CardContent>

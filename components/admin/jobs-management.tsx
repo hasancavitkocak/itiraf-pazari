@@ -190,30 +190,16 @@ export function JobsManagement() {
         <CardContent>
           <div className="space-y-3">
             <p className="text-sm text-gray-600">
-              Otomatik itiraf oluşturma saatleri (günlük 15+ kez):
+              Otomatik itiraf oluşturma - Her gün farklı saatlerde:
             </p>
-            <div className="grid grid-cols-6 gap-2">
-              <Badge variant="outline">00:07</Badge>
-              <Badge variant="outline">01:23</Badge>
-              <Badge variant="outline">02:45</Badge>
-              <Badge variant="outline">04:12</Badge>
-              <Badge variant="outline">05:38</Badge>
-              <Badge variant="outline">06:56</Badge>
-              <Badge variant="outline">08:19</Badge>
-              <Badge variant="outline">09:41</Badge>
-              <Badge variant="outline">11:03</Badge>
-              <Badge variant="outline">12:27</Badge>
-              <Badge variant="outline">13:52</Badge>
-              <Badge variant="outline">15:14</Badge>
-              <Badge variant="outline">16:36</Badge>
-              <Badge variant="outline">17:58</Badge>
-              <Badge variant="outline">19:21</Badge>
-              <Badge variant="outline">20:44</Badge>
-              <Badge variant="outline">22:09</Badge>
-              <Badge variant="outline">23:33</Badge>
+            <div className="grid grid-cols-3 gap-2">
+              <Badge variant="outline">Her 73 dakika</Badge>
+              <Badge variant="outline">Her 97 dakika</Badge>
+              <Badge variant="outline">Her 127 dakika</Badge>
             </div>
             <div className="text-xs text-gray-500 space-y-1">
-              <p>• Günde 18 kez otomatik itiraf oluşturulur</p>
+              <p>• Günde 40+ kez otomatik itiraf oluşturulur</p>
+              <p>• Her gün farklı saatlerde çalışır</p>
               <p>• Vercel Pro gerektirmez, tamamen ücretsiz</p>
               <p>• AI destekli gerçekçi itiraflar + rastgele konum</p>
             </div>

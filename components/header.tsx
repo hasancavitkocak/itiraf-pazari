@@ -69,9 +69,11 @@ export function Header() {
             if (pathname === '/') {
               // Custom event gönder
               window.dispatchEvent(new CustomEvent('clearFilters'));
+              // Sayfayı yenile (session sorununu önlemek için)
+              window.location.reload();
             } else {
-              // Diğer sayfalardan ana sayfaya git
-              router.push('/');
+              // Diğer sayfalardan ana sayfaya git - session korunarak
+              window.location.href = '/';
             }
           }}
         >
