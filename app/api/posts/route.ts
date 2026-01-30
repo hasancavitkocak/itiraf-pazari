@@ -73,6 +73,42 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    // Manuel itiraf için log kaydet
+    try {
+      const { data: categoryData } = await supabase
+        .from('categories')
+        .select('name')
+        .eq('id', categoryId)
+        .single();
+
+      const { data: cityData } = cityId ? await supabase
+        .from('cities')
+        .select('name')
+        .eq('id', cityId)
+        .single() : { data: null };
+
+      await supabase
+        .from('confession_logs')
+        .insert({
+          action: 'manual_confession_created',
+          details: { 
+            post_id: data.id, 
+            category: categoryData?.name || 'Bilinmiyor',
+            city: cityData?.name || null,
+            district: null,
+            mood: 'user_defined',
+            length: filteredContent.length > 150 ? 'long' : filteredContent.length > 80 ? 'medium' : 'short',
+            word_count: filteredContent.split(' ').length,
+            confession_content: filteredContent,
+            is_manual: true
+          },
+          created_at: new Date().toISOString()
+        });
+    } catch (logError) {
+      // Log hatası önemli değil, devam et
+      console.error('Manual confession log error:', logError);
+    }
+
     return NextResponse.json({ success: true, post: data }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -296,10 +332,11 @@ export async function GET(request: NextRequest) {
       totalPages: Math.ceil((count || 0) / limit)
     });
 
-    // Cache kontrolü ekle
-    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    // Güçlü cache kontrolü
+    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
     response.headers.set('Pragma', 'no-cache');
     response.headers.set('Expires', '0');
+    response.headers.set('Last-Modified', new Date().toUTCString());
 
     return response;
   } catch (error: any) {

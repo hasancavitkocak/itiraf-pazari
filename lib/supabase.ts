@@ -7,11 +7,11 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true,
-    flowType: 'pkce',
+    detectSessionInUrl: false, // URL'den session algılamayı kapat
+    flowType: 'implicit', // PKCE yerine implicit flow kullan
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     storageKey: 'supabase.auth.token',
-    debug: process.env.NODE_ENV === 'development'
+    debug: false // Debug'ı kapat, çok gürültülü
   }
 });
 

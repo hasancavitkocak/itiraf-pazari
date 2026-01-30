@@ -41,25 +41,11 @@ export async function POST(request: NextRequest) {
     console.log('Cities fetched:', cities?.length, 'Error:', citiesError);
     
     let randomCity = null;
-    let randomDistrict = null;
     
     if (cities && cities.length > 0) {
       // JavaScript ile rastgele seçim
       randomCity = cities[Math.floor(Math.random() * cities.length)];
       console.log('Selected city:', randomCity);
-      
-      // Seçilen şehrin ilçelerini al
-      const { data: districts, error: districtsError } = await supabase
-        .from('districts')
-        .select('id, name')
-        .eq('city_id', randomCity.id);
-      
-      console.log('Districts fetched:', districts?.length, 'Error:', districtsError);
-      
-      if (districts && districts.length > 0) {
-        randomDistrict = districts[Math.floor(Math.random() * districts.length)];
-        console.log('Selected district:', randomDistrict);
-      }
     }
     
     // Rastgele mood ve length seç
@@ -87,7 +73,7 @@ export async function POST(request: NextRequest) {
         content: confessionResult.confession,
         category_id: randomCategory.id,
         city_id: randomCity?.id || null,
-        district_id: randomDistrict?.id || null,
+        district_id: null, // İlçe kullanmıyoruz artık
         author_ip_hash: 'auto_generated_' + Date.now(),
         created_at: new Date().toISOString()
       })
@@ -108,10 +94,11 @@ export async function POST(request: NextRequest) {
             post_id: post.id, 
             category: randomCategory.name,
             city: randomCity?.name || null,
-            district: randomDistrict?.name || null,
+            district: null, // İlçe kullanmıyoruz
             mood: randomMood,
             length: randomLength,
-            word_count: confessionResult.metadata?.wordCount
+            word_count: confessionResult.metadata?.wordCount,
+            confession_content: confessionResult.confession // İtiraf içeriğini ekle
           },
           created_at: new Date().toISOString()
         });
@@ -124,7 +111,7 @@ export async function POST(request: NextRequest) {
       post_id: post.id,
       category: randomCategory.name,
       city: randomCity?.name || 'Belirtilmemiş',
-      district: randomDistrict?.name || null,
+      district: null, // İlçe kullanmıyoruz artık
       mood: randomMood,
       length: randomLength,
       word_count: confessionResult.metadata?.wordCount

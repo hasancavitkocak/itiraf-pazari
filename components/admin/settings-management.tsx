@@ -271,6 +271,53 @@ export default function SettingsManagement() {
               </span>
             </label>
           </div>
+
+          {/* AI İtiraf Prompt'u */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              AI İtiraf Prompt'u
+            </label>
+            <textarea
+              value={settings.ai_confession_prompt?.value || `Sen Türk üniversite öğrencilerinin günlük hayatından gerçekçi itiraflar yazan bir asistansın.
+
+YAZIM TARZI:
+- Günlük konuşma dili kullan (ama argo yok)
+- Samimi ve içten ol
+- Gerçekçi detaylar ekle
+- Duygusal ol ama abartma
+- Kısa cümleler, akıcı anlatım
+
+KONU ÖRNEKLERİ:
+- Gizli aşklar, reddedilme hikayeleri
+- Utanç verici anılar, komik durumlar  
+- Aile sorunları, arkadaşlık dramları
+- Sınav stresi, gelecek kaygısı
+- Para sıkıntısı, yurt hayatı
+- İlk öpücük, ilişki deneyimleri
+- Pişmanlıklar, özlemler
+- Gizli hobiler, tutkular
+
+KURALLARI:
+- 80-250 kelime arası yaz
+- İsim, okul, şehir belirtme
+- Kişisel bilgi verme
+- Sadece itiraf metnini yaz
+- Başlık ekleme
+
+Kategori: {category}
+Ton: {mood}
+Uzunluk: {length}
+
+İtiraf:`}
+              onChange={(e) => handleInputChange('ai_confession_prompt', e.target.value)}
+              rows={15}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+              placeholder="AI'ın itiraf oluştururken kullanacağı prompt'u buraya yazın..."
+            />
+            <p className="text-sm text-gray-500 mt-2">
+              Bu prompt otomatik itiraf oluşturma için kullanılır. {`{category}`}, {`{mood}`}, {`{length}`} değişkenleri otomatik doldurulur.
+            </p>
+          </div>
         </div>
       </div>
     </div>

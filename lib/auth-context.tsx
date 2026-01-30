@@ -39,6 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = async (userId: string) => {
     try {
+      console.log('Fetching profile for user:', userId); // Debug log
       const { data, error } = await supabase
         .from('profiles')
         .select('id, username, nickname, login_username, display_username, email, role, is_premium, premium_expires_at, is_banned, created_at, birth_year, gender')
@@ -52,6 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (data) {
+        console.log('Profile loaded:', data.role); // Debug log
         setProfile(data);
       } else {
         // Profil yoksa oluştur
@@ -74,6 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.error('Profile creation error:', createError);
             setProfile(null);
           } else {
+            console.log('New profile created:', newProfile.role); // Debug log
             setProfile(newProfile);
           }
         }
@@ -111,14 +114,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(null);
             setProfile(null);
           }
+        } else if (session?.user) {
+          setUser(session.user);
+          await fetchProfile(session.user.id);
         } else {
-          setUser(session?.user ?? null);
-          if (session?.user) {
-            await fetchProfile(session.user.id);
-          }
+          setUser(null);
+          setProfile(null);
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
+        setUser(null);
+        setProfile(null);
       } finally {
         if (mounted) {
           setLoading(false);
@@ -130,20 +136,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Auth state değişikliklerini dinle
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+      
       try {
-        console.log('Auth state change:', event, !!session);
+        console.log('Auth state change:', event, 'session:', !!session, 'user:', !!session?.user); // Debug log
         
         if (event === 'SIGNED_OUT') {
+          console.log('User signed out'); // Debug log
           setUser(null);
           setProfile(null);
           return;
         }
 
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          setUser(session?.user ?? null);
+          console.log('User signed in or token refreshed'); // Debug log
           if (session?.user) {
+            console.log('Setting user from auth state change'); // Debug log
+            setUser(session.user);
             await fetchProfile(session.user.id);
           } else {
+            console.log('No user in session'); // Debug log
+            setUser(null);
             setProfile(null);
           }
         }
@@ -175,34 +188,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async (nickname: string, password: string) => {
-    // Nickname'den email'e çevir
-    const email = `${nickname}@anonymous.local`;
-    
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      // Hata mesajını Türkçeleştir
-      if (error.message.includes('Invalid login credentials')) {
-        throw new Error('Kullanıcı adı veya şifre hatalı');
-      } else if (error.message.includes('Email not confirmed')) {
-        throw new Error('E-posta adresiniz doğrulanmamış');
-      } else if (error.message.includes('Too many requests')) {
-        throw new Error('Çok fazla deneme. Lütfen daha sonra tekrar deneyin');
-      } else {
-        throw new Error('Giriş yapılamadı. Lütfen tekrar deneyin');
-      }
-    }
-
-    // Başarılı giriş sonrası profili hemen yükle ve bekle
-    if (data.user) {
-      setUser(data.user);
-      await fetchProfile(data.user.id);
+    try {
+      console.log('SignIn attempt for:', nickname); // Debug log
       
-      // Profil yüklendikten sonra kısa bir bekleme
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Nickname'den email'e çevir
+      const email = `${nickname}@anonymous.local`;
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      console.log('SignIn response:', { user: !!data.user, session: !!data.session, error }); // Debug log
+
+      if (error) {
+        console.error('SignIn error:', error); // Debug log
+        // Hata mesajını Türkçeleştir
+        if (error.message.includes('Invalid login credentials')) {
+          throw new Error('Kullanıcı adı veya şifre hatalı');
+        } else if (error.message.includes('Email not confirmed')) {
+          throw new Error('E-posta adresiniz doğrulanmamış');
+        } else if (error.message.includes('Too many requests')) {
+          throw new Error('Çok fazla deneme. Lütfen daha sonra tekrar deneyin');
+        } else {
+          throw new Error('Giriş yapılamadı. Lütfen tekrar deneyin');
+        }
+      }
+
+      // Başarılı giriş sonrası manuel olarak state'i güncelle
+      if (data.user && data.session) {
+        console.log('Setting user and fetching profile...'); // Debug log
+        setUser(data.user);
+        await fetchProfile(data.user.id);
+        
+        console.log('SignIn completed successfully'); // Debug log
+        
+        // Kısa bir bekleme
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } else {
+        throw new Error('Giriş verisi alınamadı');
+      }
+    } catch (error) {
+      console.error('SignIn catch error:', error); // Debug log
+      throw error;
     }
   };
 

@@ -84,10 +84,12 @@ export async function GET(
       post: filteredPost 
     });
 
-    // Cache'i devre dışı bırak
-    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    // Güçlü cache kontrolü
+    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
     response.headers.set('Pragma', 'no-cache');
     response.headers.set('Expires', '0');
+    response.headers.set('Last-Modified', new Date().toUTCString());
+    response.headers.set('ETag', `"${Date.now()}"`);
 
     return response;
 

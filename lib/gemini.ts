@@ -23,28 +23,66 @@ export async function generateConfession(options: ConfessionRequest = {}) {
     };
 
     const lengthGuides = {
-      short: '50-100 kelime arası kısa',
-      medium: '100-200 kelime arası orta uzunlukta', 
-      long: '200-300 kelime arası uzun'
+      short: 'kısa (80-120 kelime)',
+      medium: 'orta (120-180 kelime)', 
+      long: 'uzun (180-250 kelime)'
     };
 
-    const prompt = `
-Türk üniversite öğrencilerinin yaşayabileceği gerçekçi bir itiraf yazısı oluştur.
+    // Settings'den custom prompt'u al
+    let customPrompt = '';
+    try {
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+      
+      const { data } = await supabase
+        .from('site_settings')
+        .select('setting_value')
+        .eq('setting_key', 'ai_confession_prompt')
+        .single();
+      
+      customPrompt = data?.setting_value || '';
+    } catch (error) {
+      // Settings alınamazsa varsayılan prompt kullan
+    }
+
+    // Eğer custom prompt varsa onu kullan, yoksa varsayılan
+    const prompt = customPrompt ? 
+      customPrompt
+        .replace('{category}', category)
+        .replace('{mood}', moodPrompts[mood])
+        .replace('{length}', lengthGuides[length])
+      :
+      `Sen Türk üniversite öğrencilerinin günlük hayatından gerçekçi itiraflar yazan bir asistansın.
+
+YAZIM TARZI:
+- Günlük konuşma dili kullan (ama argo yok)
+- Samimi ve içten ol
+- Gerçekçi detaylar ekle
+- Duygusal ol ama abartma
+- Kısa cümleler, akıcı anlatım
+
+KONU ÖRNEKLERİ:
+- Gizli aşklar, reddedilme hikayeleri
+- Utanç verici anılar, komik durumlar  
+- Aile sorunları, arkadaşlık dramları
+- Sınav stresi, gelecek kaygısı
+- Para sıkıntısı, yurt hayatı
+- İlk öpücük, ilişki deneyimleri
+- Pişmanlıklar, özlemler
+- Gizli hobiler, tutkular
+
+KURALLARI:
+- ${lengthGuides[length]} yaz
+- İsim, okul, şehir belirtme
+- Kişisel bilgi verme
+- Sadece itiraf metnini yaz
+- Başlık ekleme
 
 Kategori: ${category}
 Ton: ${moodPrompts[mood]}
-Uzunluk: ${lengthGuides[length]}
-
-Kurallar:
-- Gerçekçi ve samimi olsun
-- Üniversite hayatından olsun
-- Türkçe günlük konuşma dili kullan
-- Kişisel ve duygusal olsun
-- Argo kullanma, nezaketli ol
-- İsim, okul adı gibi kişisel bilgiler verme
-- Sadece itiraf metnini yaz, başlık veya açıklama ekleme
-
-Örnek konular: aşk, arkadaşlık, aile, sınav stresi, gelecek kaygısı, utanç verici anılar, gizli tutkular, pişmanlıklar, hayaller
 
 İtiraf:`;
 

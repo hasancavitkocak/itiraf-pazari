@@ -217,14 +217,58 @@ export default function JobsPage() {
               {logs.slice(0, 10).map((log) => (
                 <div key={log.id} className="border rounded-lg p-3">
                   <div className="flex justify-between items-start mb-2">
-                    <Badge variant="secondary">{log.action}</Badge>
+                    <Badge variant={log.action === 'manual_confession_created' ? 'default' : 'secondary'}>
+                      {log.action === 'manual_confession_created' ? 'Manuel İtiraf' : log.action}
+                    </Badge>
                     <span className="text-xs text-gray-500">
                       {new Date(log.created_at).toLocaleString('tr-TR')}
                     </span>
                   </div>
-                  <pre className="text-xs bg-gray-50 p-2 rounded overflow-x-auto">
-                    {JSON.stringify(log.details, null, 2)}
-                  </pre>
+                  
+                  {/* İtiraf detayları */}
+                  {log.details && log.details.post_id ? (
+                    <div className="space-y-2">
+                      <div className="text-sm">
+                        <strong>Post ID:</strong> {log.details.post_id}
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        {log.details.category && (
+                          <div><strong>Kategori:</strong> {log.details.category}</div>
+                        )}
+                        {log.details.city && (
+                          <div><strong>Şehir:</strong> {log.details.city}</div>
+                        )}
+                        {log.details.mood && (
+                          <div><strong>Mood:</strong> {log.details.mood}</div>
+                        )}
+                        {log.details.length && (
+                          <div><strong>Uzunluk:</strong> {log.details.length}</div>
+                        )}
+                        {log.details.word_count && (
+                          <div><strong>Kelime:</strong> {log.details.word_count}</div>
+                        )}
+                      </div>
+                      
+                      {/* İtiraf içeriği */}
+                      {log.details.confession_content && (
+                        <div className="mt-3 p-3 bg-gray-50 rounded text-sm">
+                          <strong className="block mb-1">İtiraf İçeriği:</strong>
+                          <p className="text-gray-700 leading-relaxed">
+                            {log.details.confession_content.length > 200 
+                              ? log.details.confession_content.substring(0, 200) + '...'
+                              : log.details.confession_content
+                            }
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    /* Raw JSON (fallback) */
+                    <pre className="text-xs bg-gray-50 p-2 rounded overflow-x-auto">
+                      {JSON.stringify(log.details || {}, null, 2)}
+                    </pre>
+                  )}
                 </div>
               ))}
             </div>

@@ -141,6 +141,9 @@ export default function PostDetailPage() {
         
         // Görüntülenme sayısını artır (cooldown kontrolü ile)
         incrementViewCount(postId);
+      }).catch((error) => {
+        console.error('Error loading post:', error);
+        setLoading(false); // Hata durumunda da loading'i kapat
       });
       
       // Yorumlar ve navigation'ı paralel yükle (yavaş)
@@ -149,26 +152,42 @@ export default function PostDetailPage() {
         fetchNavigationPosts()
       ]).then(() => {
         setCommentsLoading(false);
+      }).catch((error) => {
+        console.error('Error loading comments/navigation:', error);
+        setCommentsLoading(false); // Hata durumunda da loading'i kapat
       });
     }
   }, [postId]);
 
   const fetchPost = async () => {
     try {
-      const response = await fetch(`/api/posts/${postId}`);
+      console.log('Fetching post:', postId); // Debug log
+      const response = await fetch(`/api/posts/${postId}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      });
+      
+      console.log('Post response status:', response.status); // Debug log
+      
       if (!response.ok) {
         if (response.status === 404) {
+          console.log('Post not found'); // Debug log
           toast.error('İtiraf bulunamadı');
           router.push('/');
           return;
         }
-        throw new Error('İtiraf yüklenemedi');
+        throw new Error(`İtiraf yüklenemedi: ${response.status}`);
       }
+      
       const data = await response.json();
+      console.log('Post data received:', !!data.post); // Debug log
       setPost(data.post);
     } catch (error) {
       console.error('Error fetching post:', error);
       toast.error('İtiraf yüklenirken hata oluştu');
+      setLoading(false); // Loading'i kapat
       router.push('/');
     }
   };
