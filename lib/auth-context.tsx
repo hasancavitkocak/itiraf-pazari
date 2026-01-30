@@ -39,7 +39,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = async (userId: string) => {
     try {
-      console.log('Fetching profile for user:', userId); // Debug log
       const { data, error } = await supabase
         .from('profiles')
         .select('id, username, nickname, login_username, display_username, email, role, is_premium, premium_expires_at, is_banned, created_at, birth_year, gender')
@@ -53,7 +52,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (data) {
-        console.log('Profile loaded:', data.role); // Debug log
         setProfile(data);
       } else {
         // Profil yoksa oluştur
@@ -76,7 +74,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.error('Profile creation error:', createError);
             setProfile(null);
           } else {
-            console.log('New profile created:', newProfile.role); // Debug log
             setProfile(newProfile);
           }
         }
@@ -139,45 +136,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!mounted) return;
       
       try {
-        console.log('Auth state change:', event, 'session:', !!session, 'user:', !!session?.user); // Debug log
+        console.log('Auth state change:', event, !!session);
         
         if (event === 'SIGNED_OUT') {
-          console.log('User signed out'); // Debug log
           setUser(null);
           setProfile(null);
           return;
         }
 
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          console.log('User signed in or token refreshed'); // Debug log
           if (session?.user) {
-            console.log('Setting user from auth state change'); // Debug log
             setUser(session.user);
             await fetchProfile(session.user.id);
           } else {
-            console.log('No user in session'); // Debug log
             setUser(null);
             setProfile(null);
           }
         }
-
-        // Session expire durumunda otomatik refresh dene
-        if (event === 'TOKEN_REFRESHED' && !session) {
-          console.log('Token refresh failed, signing out');
-          setUser(null);
-          setProfile(null);
-        }
       } catch (error) {
         console.error('Auth state change error:', error);
-        // Sadece kritik hatalarda kullanıcıyı çıkış yap
-        if (error instanceof Error && 
-            (error.message.includes('refresh_token_not_found') ||
-             error.message.includes('JWT expired'))) {
-          console.log('Critical auth error, signing out');
-          await supabase.auth.signOut();
-          setUser(null);
-          setProfile(null);
-        }
       }
     });
 
@@ -188,49 +165,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async (nickname: string, password: string) => {
-    try {
-      console.log('SignIn attempt for:', nickname); // Debug log
-      
-      // Nickname'den email'e çevir
-      const email = `${nickname}@anonymous.local`;
-      
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+    // Nickname'den email'e çevir
+    const email = `${nickname}@anonymous.local`;
+    
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-      console.log('SignIn response:', { user: !!data.user, session: !!data.session, error }); // Debug log
-
-      if (error) {
-        console.error('SignIn error:', error); // Debug log
-        // Hata mesajını Türkçeleştir
-        if (error.message.includes('Invalid login credentials')) {
-          throw new Error('Kullanıcı adı veya şifre hatalı');
-        } else if (error.message.includes('Email not confirmed')) {
-          throw new Error('E-posta adresiniz doğrulanmamış');
-        } else if (error.message.includes('Too many requests')) {
-          throw new Error('Çok fazla deneme. Lütfen daha sonra tekrar deneyin');
-        } else {
-          throw new Error('Giriş yapılamadı. Lütfen tekrar deneyin');
-        }
-      }
-
-      // Başarılı giriş sonrası manuel olarak state'i güncelle
-      if (data.user && data.session) {
-        console.log('Setting user and fetching profile...'); // Debug log
-        setUser(data.user);
-        await fetchProfile(data.user.id);
-        
-        console.log('SignIn completed successfully'); // Debug log
-        
-        // Kısa bir bekleme
-        await new Promise(resolve => setTimeout(resolve, 500));
+    if (error) {
+      // Hata mesajını Türkçeleştir
+      if (error.message.includes('Invalid login credentials')) {
+        throw new Error('Kullanıcı adı veya şifre hatalı');
+      } else if (error.message.includes('Email not confirmed')) {
+        throw new Error('E-posta adresiniz doğrulanmamış');
+      } else if (error.message.includes('Too many requests')) {
+        throw new Error('Çok fazla deneme. Lütfen daha sonra tekrar deneyin');
       } else {
-        throw new Error('Giriş verisi alınamadı');
+        throw new Error('Giriş yapılamadı. Lütfen tekrar deneyin');
       }
-    } catch (error) {
-      console.error('SignIn catch error:', error); // Debug log
-      throw error;
+    }
+
+    // Başarılı giriş sonrası profili hemen yükle ve bekle
+    if (data.user) {
+      setUser(data.user);
+      await fetchProfile(data.user.id);
+      
+      // Profil yüklendikten sonra kısa bir bekleme
+      await new Promise(resolve => setTimeout(resolve, 100));
     }
   };
 

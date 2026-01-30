@@ -20,11 +20,6 @@ export function Header() {
   const { user, profile, signOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  
-  // Debug log (development only)
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Header render - user:', !!user, 'profile role:', profile?.role, 'pathname:', pathname);
-  }
   const [siteLogo, setSiteLogo] = useState<string>('');
   const [siteName, setSiteName] = useState<string>('İtiraf Pazarı');
   const [isLoading, setIsLoading] = useState(true);
